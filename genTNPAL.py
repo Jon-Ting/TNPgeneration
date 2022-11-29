@@ -45,13 +45,13 @@ def randConv(obj, element3, ele2Ratio, ele3Ratio, rseed, prob):
     probArr = None  # np.array(prob)[convEleArr] / np.array(prob)[convEleArr].sum() if len(prob) > 0 else None
 
     if diff < 0:
-        if ele2Ratio == '': ele2Ratio = 50
+        if ele2Ratio == '': ele2Ratio = (100 - ele3Ratio) / 2
         idxArr = randGen.choice(a=ele1Arr, size=round(abs(diff) * (100 - ele2Ratio - ele3Ratio) / 100), replace=False, p=probArr)
         for idx in idxArr: obj[idx].symbol = element3
         idxArr = randGen.choice(a=ele2Arr, size=round(abs(diff) * ele2Ratio / 100), replace=False, p=probArr)
         for idx in idxArr: obj[idx].symbol = element3
     else:
-        if ele2Ratio == '': ele2Ratio = 50
+        if ele2Ratio == '': ele2Ratio = (100 - ele3Ratio) / 2
         idxArr = randGen.choice(a=ele3Arr, size=round(abs(diff) * (100 - ele2Ratio - ele3Ratio) / 100), replace=False, p=probArr)
         for idx in idxArr: obj[idx].symbol = element1
         idxArr = randGen.choice(a=ele3Arr, size=round(abs(diff) * ele2Ratio / 100), replace=False, p=probArr)
