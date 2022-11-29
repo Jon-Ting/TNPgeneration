@@ -4,7 +4,7 @@
 
 from math import sqrt
 
-LMP_DATA_DIR = '/home/bill-peng/Projects/BNPs/'
+LMP_DATA_DIR = './'
 MNP_DIR = 'MNP/'
 BNP_DIR = ['BNP/L10/', 'BNP/RAL/']  # 'BNP/RL10/', 'BNP/RCS/'
 TNP_DIR = ['TNP/L10/', 'TNP/RAL/']  # 'TNP/RL10/', 'TNP/RCS/'
