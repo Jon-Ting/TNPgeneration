@@ -6,16 +6,14 @@ from math import sqrt
 
 LMP_DATA_DIR = './'
 MNP_DIR = 'MNP/'
-BNP_DIR = ['BNP/L10/', 'BNP/RAL/']  # 'BNP/RL10/', 'BNP/RCS/'
-TNP_DIR = ['TNP/L10/', 'TNP/RAL/']  # 'TNP/RL10/', 'TNP/RCS/'
+BNP_DIR = ['BNP/L10/', 'BNP/RAL/']  # 'BNP/CS/'
+TNP_DIR = ['TNP/L10R/', 'TNP/RRAL/', 'TNP/LL10/']  # CS, CL10S, CRALS, CSRAL, CSL10, CRSR  
 GOLDEN_RATIO = (1+sqrt(5)) / 2
 VACUUM_THICKNESS = 40.0
-RANDOM_DISTRIB_NO = 10
+RANDOM_DISTRIB_NO = 2
 
 # Elements of interest & their lattice parameters
-eleDict = {#'Co':
-           #{'lc': {'FCC': 3.537, 'HCP': 1.621}},
-           'Pd':
+eleDict = {'Pd':
             {'lc': {'FCC': 3.89}}, 
            'Pt': 
             {'lc': {'FCC': 3.92}}, 
@@ -29,18 +27,13 @@ eleDict = {#'Co':
 '''
 
 # NP diameters of interest (Angstrom)
-# diameterList = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 180, 200, 250, 300]  # For generating MNP
 diameterList = [30]  # For generating MNP
-# diameterList = [20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150, 200, 300]  # Ideally generate for all BNPs
-# diameterList = [20, 30, 40, 50, 60, 70, 80]  # Currrent BNP generation
 
 # Shapes of interest
-# shapeList = ['CU', 'TH', 'RD', 'OT', 'TO', 'CO', 'DH', 'IC']
 shapeList = ['SP']
 
 # Distributions of interest
-distribList = ['RAL', 'L10']  # 'L12', 'RCS', 'RL10', 'RL12']
+distribList = ['L10', 'RAL'] 
 
 # Ratios of interest (B where A + B = 100)
-# ratioList = [10, 20, 25, 30, 50, 70, 75, 80, 90]
 ratioList = [25, 50, 75]

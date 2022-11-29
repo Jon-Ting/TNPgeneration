@@ -44,13 +44,13 @@ def randConv(obj, element3, ele2Ratio, ele3Ratio, rseed, prob):
     probArr = None  # np.array(prob)[convEleArr] / np.array(prob)[convEleArr].sum() if len(prob) > 0 else None
 
     if diff < 0:
-        if ele2Ratio is '': ele2Ratio = 50
+        if ele2Ratio == '': ele2Ratio = 50
         idxArr = randGen.choice(a=ele1Arr, size=round(abs(diff) * (100 - ele2Ratio - ele3Ratio) / 100), replace=False, p=probArr)
         for idx in idxArr: obj[idx].symbol = element3
         idxArr = randGen.choice(a=ele2Arr, size=round(abs(diff) * ele2Ratio / 100), replace=False, p=probArr)
         for idx in idxArr: obj[idx].symbol = element3
     else:
-        if ele2Ratio is '': ele2Ratio = 50
+        if ele2Ratio == '': ele2Ratio = 50
         idxArr = randGen.choice(a=ele3Arr, size=round(abs(diff) * (100 - ele2Ratio - ele3Ratio) / 100), replace=False, p=probArr)
         for idx in idxArr: obj[idx].symbol = element1
         idxArr = randGen.choice(a=ele3Arr, size=round(abs(diff) * ele2Ratio / 100), replace=False, p=probArr)
@@ -138,10 +138,9 @@ def genTNP(obj, element3, shape, ele2Ratio, ele3Ratio, distrib, rseed):
 def writeTNP(element1, element2, diameter, shape, ele2Ratio, rep1, ele3Ratio, distrib1, distrib2, replace=False, vis=False):
     if not isdir(LMP_DATA_DIR): raise Exception("Can't found directory to store data files!")
     for element3 in eleDict:
-        if element3 is element1: continue
-        if element3 is element2: continue
+        if element3 is element1 or element3 is element2: continue
         # Get input file name
-        if 'R' not in distrib1:
+        if 'L10' in distrib1:
             ele2Ratio, rep1 = '', ''
             directory = BNP_DIR[0]
             fileNameBNP = '{0}{1}{2}{3}{4}.lmp'.format(element1, element2, diameter, shape, distrib1)
@@ -155,13 +154,11 @@ def writeTNP(element1, element2, diameter, shape, ele2Ratio, rep1, ele3Ratio, di
         for rep2 in range(RANDOM_DISTRIB_NO):
             # Generate the new file name
             if rep1 == rep2: continue
-            if 'R' not in distrib2:
-                ele3Ratio, rep2 = '', ''
-                directory = TNP_DIR[0]
-            else:
-                directory = TNP_DIR[1]
+            if distrib1 == 'L10' and distrib2 == 'RAL': directory = TNP_DIR[0]
+            elif distrib1 == 'RAL' and distrib2 == 'RAL': directory = TNP_DIR[1]
+            # ele3Ratio, rep2 = '', ''  # TODO
             fileNameTNP = '{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}.lmp'.format(
-                element1, element2, element3, diameter, shape,
+                element1, element2, element3, diameter, shape, 
                 ele2Ratio, distrib1, rep1,
                 ele3Ratio, distrib2, rep2
             )
@@ -171,14 +168,14 @@ def writeTNP(element1, element2, diameter, shape, ele2Ratio, rep1, ele3Ratio, di
                     print('      {0} already exist, skipping...'.format(fileNameTNP))
                     continue
 
-            try:
-                tnp = genTNP(bnp, element3, shape, ele2Ratio, ele3Ratio, distrib2, rep2)
-                write_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, directory, fileNameTNP), atoms=tnp, units='metal',
-                                  atom_style='atomic')
-                print('      Generated {0}, formula: {1}'.format(fileNameTNP, tnp.get_chemical_formula()))
-                if vis: view(tnp)
-            except Exception as err:
-                print(err)
+            #try:
+            tnp = genTNP(bnp, element3, shape, ele2Ratio, ele3Ratio, distrib2, rep2)
+            write_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, directory, fileNameTNP), atoms=tnp, units='metal',
+                              atom_style='atomic')
+            print('      Generated {0}, formula: {1}'.format(fileNameTNP, tnp.get_chemical_formula()))
+            if vis: view(tnp)
+            #except Exception as err:
+            #    print(err)
 
             if 'R' not in distrib2: break
 
@@ -198,6 +195,8 @@ def main(replace=False, vis=False):
                             for rep1 in range(RANDOM_DISTRIB_NO):
                                 for distrib1 in distribList:
                                     for distrib2 in distribList:
+                                        if distrib1 == 'L10' and distrib2 == 'L10': continue
+                                        elif distrib1 == 'RAL' and distrib2 == 'L10': continue
                                         print('    Distrib 1: {0}, Distrib 2: {1}'.format(distrib1, distrib2))
                                         writeTNP(
                                             element1=element1,
@@ -215,5 +214,5 @@ def main(replace=False, vis=False):
 
 
 if __name__ == '__main__':
-    main(replace=False, vis=False)
+    main(replace=True, vis=False)
     print('ALL DONE!')
