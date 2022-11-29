@@ -15,6 +15,7 @@ Note:
 
 import numpy as np
 from os.path import isfile, isdir
+from os import mkdir
 from numpy.random import seed, rand, RandomState
 from ase.io.lammpsdata import read_lammps_data, write_lammps_data
 from ase.visualize import view
@@ -136,7 +137,9 @@ def genTNP(obj, element3, shape, ele2Ratio, ele3Ratio, distrib, rseed):
 
 
 def writeTNP(element1, element2, diameter, shape, ele2Ratio, rep1, ele3Ratio, distrib1, distrib2, replace=False, vis=False):
-    if not isdir(LMP_DATA_DIR): raise Exception("Can't found directory to store data files!")
+    if not isdir(LMP_DATA_DIR): mkdir(LMP_DATA_DIR)
+    if not isdir('{0}{1}'.format(LMP_DATA_DIR, 'TNP')): mkdir('{0}{1}'.format(LMP_DATA_DIR, 'TNP'))
+
     for element3 in eleDict:
         if element3 is element1 or element3 is element2: continue
         # Get input file name
@@ -162,21 +165,19 @@ def writeTNP(element1, element2, diameter, shape, ele2Ratio, rep1, ele3Ratio, di
                 ele2Ratio, distrib1, rep1,
                 ele3Ratio, distrib2, rep2
             )
-
             if not replace:
                 if isfile(LMP_DATA_DIR + directory + fileNameTNP):
                     print('      {0} already exist, skipping...'.format(fileNameTNP))
                     continue
 
-            #try:
-            tnp = genTNP(bnp, element3, shape, ele2Ratio, ele3Ratio, distrib2, rep2)
-            write_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, directory, fileNameTNP), atoms=tnp, units='metal',
-                              atom_style='atomic')
-            print('      Generated {0}, formula: {1}'.format(fileNameTNP, tnp.get_chemical_formula()))
-            if vis: view(tnp)
-            #except Exception as err:
-            #    print(err)
-
+            try:
+                tnp = genTNP(bnp, element3, shape, ele2Ratio, ele3Ratio, distrib2, rep2)
+                if not isdir('{0}{1}'.format(LMP_DATA_DIR, directory[:-1])): mkdir('{0}{1}'.format(LMP_DATA_DIR, directory[:-1]))
+                write_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, directory, fileNameTNP), atoms=tnp, units='metal', atom_style='atomic')
+                print('      Generated {0}, formula: {1}'.format(fileNameTNP, tnp.get_chemical_formula()))
+                if vis: view(tnp)
+            except ValueError as err:
+                print(err)
             if 'R' not in distrib2: break
 
 
@@ -215,5 +216,5 @@ def main(replace=False, vis=False):
 
 
 if __name__ == '__main__':
-    main(replace=True, vis=False)
+    main(replace=False, vis=False)
     print('ALL DONE!')

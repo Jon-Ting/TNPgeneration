@@ -21,8 +21,8 @@ Note:
 """
 
 from math import sqrt, radians, cos, sin
-from os.path import isfile, isdir, exists
-
+from os.path import isfile, isdir
+from os import mkdir
 import numpy as np
 from ase.build import add_vacuum
 from ase.cluster.cubic import FaceCenteredCubic
@@ -113,7 +113,8 @@ def writeMNP(element, diameter, latConst, shape, replace=False, vis=False):
     boxSize = [dim[i] + VACUUM_THICKNESS for (i, dim) in enumerate(mnp.cell)]
     mnp.set_cell(boxSize)
     mnp.translate([VACUUM_THICKNESS / 2] * 3)
-    
+
+    if not isdir('{0}{1}'.format(LMP_DATA_DIR, MNP_DIR[:-1])): mkdir('{0}{1}'.format(LMP_DATA_DIR, MNP_DIR[:-1]))
     write_lammps_data(fileobj='{0}{1}{2}'.format(LMP_DATA_DIR, MNP_DIR, fileName), atoms=mnp, units='metal', atom_style='atomic')
     print('      Generated {0}, diameter: {1:.1f} A^3, size: {2} atoms'.format(fileName, boxSize[0], mnp.get_global_number_of_atoms()))
     if vis: view(mnp)
@@ -139,6 +140,7 @@ def writeMNP_sphere(element, diameter, latConst, replace=False, vis=False):
     mnp.translate([VACUUM_THICKNESS / 2] * 3)
 
     # Write atoms structure to a lmp file and create file if not exists
+    if not isdir('{0}{1}'.format(LMP_DATA_DIR, MNP_DIR[:-1])): mkdir('{0}{1}'.format(LMP_DATA_DIR, MNP_DIR[:-1]))
     write_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, MNP_DIR, fileName), atoms=mnp, units='metal', atom_style='atomic')
 
     print('      Generated {0}, diameter: {1:.1f} A^3, size: {2} atoms'.format(fileName, boxSize[0],
@@ -147,7 +149,7 @@ def writeMNP_sphere(element, diameter, latConst, replace=False, vis=False):
 
 
 def main(replace=False, vis=False):
-    if not isdir(LMP_DATA_DIR + MNP_DIR): raise Exception("Can't found directory to store data files!")
+    if not isdir(LMP_DATA_DIR): mkdir(LMP_DATA_DIR)
     print('Generating NPs with {0} Angstrom of vacuum on each dimension:'.format(VACUUM_THICKNESS))
     for diameter in diameterList:
         # if diameter != 20:  continue  # DEBUG
@@ -162,7 +164,7 @@ def main(replace=False, vis=False):
             
 
 if __name__ == '__main__':
-    main(replace=True, vis=False)
+    main(replace=False, vis=False)
     print('ALL DONE!')
 
 

@@ -36,4 +36,4 @@ shapeList = ['SP']
 distribList = ['L10', 'RAL'] 
 
 # Ratios of interest (B where A + B = 100)
-ratioList = [25, 50, 75]
+ratioList = [20, 40, 60]

@@ -15,6 +15,7 @@ Note:
 
 import numpy as np
 from os.path import isfile, isdir
+from os import mkdir
 from numpy.random import seed, rand, RandomState
 from ase.io.lammpsdata import read_lammps_data, write_lammps_data
 from ase.visualize import view
@@ -123,25 +124,30 @@ def genBNP(obj, element2, shape, ratio, distrib, rseed):
 
 
 def writeBNP(element1, diameter, shape, ratio, distrib, replace=False, vis=False):
-    if not isdir(LMP_DATA_DIR): raise Exception("Can't found directory to store data files!")
+    if not isdir(LMP_DATA_DIR): mkdir(LMP_DATA_DIR)
+    if not isdir('{0}{1}'.format(LMP_DATA_DIR, 'BNP')): mkdir('{0}{1}'.format(LMP_DATA_DIR, 'BNP'))
+
     for element2 in eleDict:
         if element2 is element1: continue
         fileNameMNP = '{0}{1}{2}.lmp'.format(element1, diameter, shape)
         mnp = read_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, MNP_DIR, fileNameMNP), style='atomic', units='metal')
         mnp.set_chemical_symbols(symbols=[element1] * len(mnp))
+
         for rep in range(RANDOM_DISTRIB_NO):
             if 'R' not in distrib:
                 ratio, rep = '', ''
-                dir = BNP_DIR[0]
+                directory = BNP_DIR[0]
             else:
-                dir = BNP_DIR[1]
+                directory = BNP_DIR[1]
             fileNameBNP = '{0}{1}{2}{3}{4}{5}{6}.lmp'.format(element1, element2, diameter, shape, ratio, distrib, rep)
             if not replace:
-                if isfile(LMP_DATA_DIR + dir + fileNameBNP):
+                if isfile(LMP_DATA_DIR + directory + fileNameBNP):
                     print('      {0} already exist, skipping...'.format(fileNameBNP))
                     continue
+
             bnp = genBNP(obj=mnp.copy(), element2=element2, shape=shape, ratio=ratio, distrib=distrib, rseed=rep)
-            write_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, dir, fileNameBNP), atoms=bnp, units='metal', atom_style='atomic')
+            if not isdir('{0}{1}'.format(LMP_DATA_DIR, directory[:-1])): mkdir('{0}{1}'.format(LMP_DATA_DIR, directory[:-1]))
+            write_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, directory, fileNameBNP), atoms=bnp, units='metal', atom_style='atomic')
             print('      Generated {0}, formula: {1}'.format(fileNameBNP, bnp.get_chemical_formula()))
             if vis: view(bnp)
             if 'R' not in distrib: break
