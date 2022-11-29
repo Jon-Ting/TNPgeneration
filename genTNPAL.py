@@ -191,6 +191,7 @@ def main(replace=False, vis=False):
                 for shape in shapeList:
                     for ratio1 in ratioList:
                         for ratio2 in ratioList:
+                            if ratio1 + ratio2 >= 100: continue
                             print('    Ratio 1: {0}, Ratio 2: {1}'.format(ratio1, ratio2))
                             for rep1 in range(RANDOM_DISTRIB_NO):
                                 for distrib1 in distribList:
