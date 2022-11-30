@@ -123,7 +123,7 @@ def genBNP(obj, element2, shape, ratio2, distrib, rseed):
     return obj
 
 
-def writeBNP(element1, diameter, shape, ratio, distrib, replace=False, vis=False):
+def writeBNP(element1, diameter, shape, ratio2, distrib, replace=False, vis=False):
     if not isdir(LMP_DATA_DIR): mkdir(LMP_DATA_DIR)
     if not isdir('{0}{1}'.format(LMP_DATA_DIR, 'BNP')): mkdir('{0}{1}'.format(LMP_DATA_DIR, 'BNP'))
 
@@ -138,13 +138,13 @@ def writeBNP(element1, diameter, shape, ratio, distrib, replace=False, vis=False
             else: dirName = BNP_DIR[1]
             fileNameBNP = '{0}{1}{2}{3}{4}{5}{6}{7}.lmp'.format(element1, element2, diameter, shape, ratio1, ratio2, distrib, rep)
             if not replace:
-                if isfile(LMP_DATA_DIR + directory + fileNameBNP):
+                if isfile(LMP_DATA_DIR + dirName + fileNameBNP):
                     print('      {0} already exist, skipping...'.format(fileNameBNP))
                     continue
 
-            bnp = genBNP(obj=mnp.copy(), element2=element2, shape=shape, ratio=ratio, distrib=distrib, rseed=rep)
-            if not isdir('{0}{1}'.format(LMP_DATA_DIR, directory[:-1])): mkdir('{0}{1}'.format(LMP_DATA_DIR, directory[:-1]))
-            write_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, directory, fileNameBNP), atoms=bnp, units='metal', atom_style='atomic')
+            bnp = genBNP(obj=mnp.copy(), element2=element2, shape=shape, ratio2=ratio2, distrib=distrib, rseed=rep)
+            if not isdir('{0}{1}'.format(LMP_DATA_DIR, dirName[:-1])): mkdir('{0}{1}'.format(LMP_DATA_DIR, dirName[:-1]))
+            write_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, dirName, fileNameBNP), atoms=bnp, units='metal', atom_style='atomic')
             print('      Generated {0}, formula: {1}'.format(fileNameBNP, bnp.get_chemical_formula()))
             if vis: view(bnp)
             if 'R' not in distrib: break
@@ -171,7 +171,7 @@ def main(replace=False, vis=False):
     
 
 if __name__ == '__main__':
-    main(replace=True, vis=False)
+    main(replace=False, vis=False)
     print('ALL DONE!')
 
 

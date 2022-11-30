@@ -59,19 +59,18 @@ def randConv(obj, element1, element2, element3, ele1Ratio, ele2Ratio, ele3Ratio,
         if abs(diff3) > len(idxArr): diff3 = len(idxArr)
         idxArr3 = randGen.choice(a=idxArr, size=abs(diff3), replace=False, p=None)
         for idx in idxArr3: obj[idx].symbol = element3
-    ele1Arr, ele2Arr, ele3Arr = obj.symbols.search(element1), obj.symbols.search(element2), obj.symbols.search(element3)
     return obj
 
 
 def genTNP(obj, element1, element2, element3, ele1Ratio, ele2Ratio, ele3Ratio, distrib1, distrib2, rseed=0):
     probList = []
-    if distrib2 == 'RAL':
+    # if distrib2 == 'RAL':
         # seed(rseed)
-        randList = rand(len(obj))  # Uniform distribution
+        # randList = rand(len(obj))  # Uniform distribution
         # for (i, atom) in enumerate(obj):
         #      if randList[i] > (100 - ele3Ratio) / 100: atom.symbol = element3
 
-    elif distrib2 in ['L10', 'L12', 'RL10', 'RL12']:
+    if distrib2 in ['L10', 'L12', 'RL10', 'RL12']:
         lc = eleDict[obj[0].symbol]['lc']['FCC']
         vacOffset = VACUUM_THICKNESS / 2
         for (i, atom) in enumerate(obj):
@@ -81,7 +80,6 @@ def genTNP(obj, element1, element2, element3, ele1Ratio, ele2Ratio, ele3Ratio, d
             if distrib2 == 'L12':
                 xModulo = round((round(obj.positions[i][0], 3) - vacOffset) % lc, 3)
                 if (xModulo == 0.0) | (xModulo == lc): atom.symbol = element3
-
     else:
         raise Exception('Specified distribution type unrecognised!')
 
@@ -91,7 +89,9 @@ def genTNP(obj, element1, element2, element3, ele1Ratio, ele2Ratio, ele3Ratio, d
 
 
 def writeTNP(element1, element2, element3, diameter, shape, ele1Ratio, ele2Ratio, ele3Ratio, distrib1, distrib2, rep1=0, replace=False, vis=False):
-    if not isdir(LMP_DATA_DIR): raise Exception("Can't found directory to store data files!")
+    if not isdir(LMP_DATA_DIR): mkdir(LMP_DATA_DIR)
+    if not isdir('{0}{1}'.format(LMP_DATA_DIR, 'TNP')): mkdir('{0}{1}'.format(LMP_DATA_DIR, 'TNP'))
+
     # Get input file name
     if 'L10' in distrib1: bnpRatio1, bnpRatio2, rep1, dirName = 50, 50, '', BNP_DIR[0]
     else: bnpRatio1, bnpRatio2, dirName = 100 - ele2Ratio, ele2Ratio, BNP_DIR[1]
@@ -103,7 +103,7 @@ def writeTNP(element1, element2, element3, diameter, shape, ele1Ratio, ele2Ratio
     # Generate the new file name
     if distrib1 == 'L10' and distrib2 == 'RAL': dirName = TNP_DIR[0]
     elif distrib1 == 'RAL' and distrib2 == 'RAL': dirName = TNP_DIR[1]
-    elif distrib1 == 'L10' and distrib2 == 'L10': dirName = TNP_DIR[2]
+    elif distrib1 == 'L10' and distrib2 == 'L10': return # dirName = TNP_DIR[2]
     # ele3Ratio, rep2 = '', ''  # TODO
     
     for rep2 in range(RANDOM_DISTRIB_NO):
@@ -113,15 +113,14 @@ def writeTNP(element1, element2, element3, diameter, shape, ele1Ratio, ele2Ratio
             ele1Ratio, ele2Ratio, ele3Ratio, 
             distrib1, rep1, distrib2, rep2
         )
-
         if not replace:
             if isfile(LMP_DATA_DIR + dirName + fileNameTNP):
                 print('      {0} already exist, skipping...'.format(fileNameTNP))
                 return
 
         tnp = genTNP(bnp, element1, element2, element3, ele1Ratio, ele2Ratio, ele3Ratio, distrib1, distrib2, rep2)
-        write_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, dirName, fileNameTNP), atoms=tnp, units='metal',
-                          atom_style='atomic')
+        if not isdir('{0}{1}'.format(LMP_DATA_DIR, dirName[:-1])): mkdir('{0}{1}'.format(LMP_DATA_DIR, dirName[:-1]))
+        write_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, dirName, fileNameTNP), atoms=tnp, units='metal', atom_style='atomic')
         print('      Generated {0}, formula: {1}'.format(fileNameTNP, tnp.get_chemical_formula()))
         if vis: view(tnp)
 
