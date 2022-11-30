@@ -15,6 +15,7 @@ Note:
 
 import numpy as np
 from os.path import isfile, isdir
+from os import mkdir
 from numpy.random import seed, rand, RandomState
 from ase.io.lammpsdata import read_lammps_data, write_lammps_data
 from ase.visualize import view
@@ -165,5 +166,5 @@ def main(replace=False, vis=False):
 
 
 if __name__ == '__main__':
-    main(replace=True, vis=False)
+    main(replace=False, vis=False)
     print('ALL DONE!')
