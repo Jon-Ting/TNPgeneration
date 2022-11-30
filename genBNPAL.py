@@ -46,13 +46,13 @@ def randConv(obj, element2, ele2Ratio, rseed, prob):
     return obj
 
 
-def genBNP(obj, element2, shape, ratio, distrib, rseed):
+def genBNP(obj, element2, shape, ratio2, distrib, rseed):
     probList = []
     if distrib == 'RAL':
         seed(rseed)
         randList = rand(len(obj))  # Uniform distribution
         for (i, atom) in enumerate(obj):
-            if randList[i] > (100 - ratio) / 100: atom.symbol = element2
+            if randList[i] > (100 - ratio2) / 100: atom.symbol = element2
 
     elif distrib == 'RCS':
         if shape == 'IC':
@@ -118,30 +118,28 @@ def genBNP(obj, element2, shape, ratio, distrib, rseed):
     else:
         raise Exception('Specified distribution type unrecognised!')
 
-    if 'R' in distrib: obj = randConv(obj=obj, element2=element2, ele2Ratio=ratio, rseed=rseed, prob=probList)
+    if 'R' in distrib: obj = randConv(obj=obj, element2=element2, ele2Ratio=ratio2, rseed=rseed, prob=probList)
     return obj
 
 
-def writeBNP(element1, diameter, shape, ratio, distrib, replace=False, vis=False):
+def writeBNP(element1, diameter, shape, ratio2, distrib, replace=False, vis=False):
     if not isdir(LMP_DATA_DIR): raise Exception("Can't found directory to store data files!")
     for element2 in eleDict:
         if element2 is element1: continue
         fileNameMNP = '{0}{1}{2}.lmp'.format(element1, diameter, shape)
         mnp = read_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, MNP_DIR, fileNameMNP), style='atomic', units='metal')
         mnp.set_chemical_symbols(symbols=[element1] * len(mnp))
+        ratio1 = 100 - ratio2
         for rep in range(RANDOM_DISTRIB_NO):
-            if 'R' not in distrib:
-                ratio, rep = '', ''
-                dir = BNP_DIR[0]
-            else:
-                dir = BNP_DIR[1]
-            fileNameBNP = '{0}{1}{2}{3}{4}{5}{6}.lmp'.format(element1, element2, diameter, shape, ratio, distrib, rep)
+            if 'R' not in distrib: ratio1, ratio2, rep, dirName = 50, 50, '', BNP_DIR[0]
+            else: dirName = BNP_DIR[1]
+            fileNameBNP = '{0}{1}{2}{3}{4}{5}{6}{7}.lmp'.format(element1, element2, diameter, shape, ratio1, ratio2, distrib, rep)
             if not replace:
                 if isfile(LMP_DATA_DIR + dir + fileNameBNP):
                     print('      {0} already exist, skipping...'.format(fileNameBNP))
                     continue
-            bnp = genBNP(obj=mnp.copy(), element2=element2, shape=shape, ratio=ratio, distrib=distrib, rseed=rep)
-            write_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, dir, fileNameBNP), atoms=bnp, units='metal', atom_style='atomic')
+            bnp = genBNP(obj=mnp.copy(), element2=element2, shape=shape, ratio2=ratio2, distrib=distrib, rseed=rep)
+            write_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, dirName, fileNameBNP), atoms=bnp, units='metal', atom_style='atomic')
             print('      Generated {0}, formula: {1}'.format(fileNameBNP, bnp.get_chemical_formula()))
             if vis: view(bnp)
             if 'R' not in distrib: break
@@ -158,17 +156,17 @@ def main(replace=False, vis=False):
             for shape in shapeList:
                 # if shape not in ['DH']:  continue  # DEBUG
                 print('    Shape: {0}'.format(shape))
-                for ratio in ratioList:
-                    # if ratio != 10:  continue  # DEBUG
-                    print('    Ratio: {0}'.format(ratio))
+                for ratio2 in ratioList:
+                    # if ratio2 != 10:  continue  # DEBUG
+                    print('    Ratio: {0}'.format(ratio2))
                     for distrib in distribList:
                         # if (shape in ['DH', 'IC']) & ('L1' in distrib): continue
                         # if distrib != 'RCS':  continue  # DEBUG
-                        writeBNP(element1=element, diameter=diameter, shape=shape, ratio=ratio, distrib=distrib, replace=replace, vis=vis)
+                        writeBNP(element1=element, diameter=diameter, shape=shape, ratio2=ratio2, distrib=distrib, replace=replace, vis=vis)
     
 
 if __name__ == '__main__':
-    main(replace=False, vis=False)
+    main(replace=True, vis=False)
     print('ALL DONE!')
 
 
