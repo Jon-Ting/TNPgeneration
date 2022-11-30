@@ -19,7 +19,7 @@ from os import mkdir
 from numpy.random import seed, rand, RandomState
 from ase.io.lammpsdata import read_lammps_data, write_lammps_data
 from ase.visualize import view
-from constants import LMP_DATA_DIR, BNP_DIR, TNP_DIR, RANDOM_DISTRIB_NO, VACUUM_THICKNESS, eleDict, diameterList, shapeList, distribList, ratioList
+from constants import LMP_DATA_DIR, MNP_DIR, BNP_DIR, TNP_DIR, RANDOM_DISTRIB_NO, VACUUM_THICKNESS, eleDict, diameterList, shapeList, distribList, ratioList
 
 
 def dist1D(coord1, coord2, dim):
@@ -71,7 +71,14 @@ def genTNP(obj, element1, element2, element3, ele1Ratio, ele2Ratio, ele3Ratio, d
         # for (i, atom) in enumerate(obj):
         #      if randList[i] > (100 - ele3Ratio) / 100: atom.symbol = element3
     elif distrib1 == 'L10' and distrib2 == 'L10':
-        pass  # TODO LL10
+        lc = eleDict[element1]['lc']['FCC']
+        vacOffset = VACUUM_THICKNESS / 2
+        for (i, atom) in enumerate(obj):
+            yModulo = round((round(obj.positions[i][1], 3) - vacOffset) % (lc + lc / 2), 3)
+            if (yModulo == lc):
+                atom.symbol = element2
+            if (yModulo == 0.0) | (yModulo == lc + lc / 2):
+                atom.symbol = element3
     elif distrib2 in ['L10', 'L12', 'RL10', 'RL12']:
         lc = eleDict[obj[0].symbol]['lc']['FCC']
         vacOffset = VACUUM_THICKNESS / 2
@@ -94,13 +101,18 @@ def writeTNP(element1, element2, element3, diameter, shape, ele1Ratio, ele2Ratio
     if not isdir(LMP_DATA_DIR): mkdir(LMP_DATA_DIR)
     if not isdir('{0}{1}'.format(LMP_DATA_DIR, 'TNP')): mkdir('{0}{1}'.format(LMP_DATA_DIR, 'TNP'))
 
-    # Get input file name
-    if 'L10' in distrib1: bnpRatio1, bnpRatio2, rep1, dirName = 50, 50, '', BNP_DIR[0]
+    # Get input file name and read data from previous generated file
+    if distrib1 == 'L10': bnpRatio1, bnpRatio2, rep1, dirName = 50, 50, '', BNP_DIR[0]
     else: bnpRatio1, bnpRatio2, dirName = 100 - ele2Ratio, ele2Ratio, BNP_DIR[1]
-    fileNameBNP = '{0}{1}{2}{3}{4}{5}{6}{7}.lmp'.format(element1, element2, diameter, shape, bnpRatio1, bnpRatio2, distrib1, rep1)
-    # Read data from previous generated file
-    bnp = read_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, dirName, fileNameBNP), style='atomic', units='metal')
-    bnp.set_chemical_symbols(symbols=[element1 if bnp.arrays['type'][i] == 1 else element2 for i in range(bnp.arrays['type'].size)])
+    if distrib1 == 'L10' and distrib2 == 'L10':
+        dirName = MNP_DIR
+        fileNameBNP = '{0}{1}{2}.lmp'.format(element1, diameter, shape)
+        bnp = read_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, dirName, fileNameBNP), style='atomic', units='metal')
+        bnp.set_chemical_symbols(symbols=[element1] * len(bnp))
+    else:
+        fileNameBNP = '{0}{1}{2}{3}{4}{5}{6}{7}.lmp'.format(element1, element2, diameter, shape, bnpRatio1, bnpRatio2, distrib1, rep1)
+        bnp = read_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, dirName, fileNameBNP), style='atomic', units='metal')
+        bnp.set_chemical_symbols(symbols=[element1 if bnp.arrays['type'][i] == 1 else element2 for i in range(bnp.arrays['type'].size)])
 
     # Generate the new file name
     if distrib1 == 'L10' and distrib2 == 'RAL': dirName = TNP_DIR[0]
@@ -145,8 +157,8 @@ def main(replace=False, vis=False):
                                 for distrib1 in distribList:
                                     for distrib2 in distribList:
                                         for rep1 in range(RANDOM_DISTRIB_NO):
-                                            if distrib1 == 'L10' and distrib2 == 'L10': continue
-                                            elif distrib1 == 'RAL' and distrib2 == 'L10': continue
+                                            # if distrib1 == 'L10' and distrib2 == 'L10': continue
+                                            if distrib1 == 'RAL' and distrib2 == 'L10': continue
                                             print('        Distrib 1: {0}, Distrib 2: {1}'.format(distrib1, distrib2))
                                             writeTNP(
                                                 element1=element1,
