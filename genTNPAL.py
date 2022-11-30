@@ -64,13 +64,13 @@ def randConv(obj, element1, element2, element3, ele1Ratio, ele2Ratio, ele3Ratio,
 
 def genTNP(obj, element1, element2, element3, ele1Ratio, ele2Ratio, ele3Ratio, distrib1, distrib2, rseed=0):
     probList = []
-    # if distrib2 == 'RAL':
+    if distrib2 == 'RAL':
+        pass
         # seed(rseed)
         # randList = rand(len(obj))  # Uniform distribution
         # for (i, atom) in enumerate(obj):
         #      if randList[i] > (100 - ele3Ratio) / 100: atom.symbol = element3
-
-    if distrib2 in ['L10', 'L12', 'RL10', 'RL12']:
+    elif distrib2 in ['L10', 'L12', 'RL10', 'RL12']:
         lc = eleDict[obj[0].symbol]['lc']['FCC']
         vacOffset = VACUUM_THICKNESS / 2
         for (i, atom) in enumerate(obj):

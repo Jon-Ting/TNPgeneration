@@ -11,8 +11,8 @@
 # - Validate potential files
 
 # Define variables
-EAM_DIR=/home/bill-peng/Projects/BNPs/EAM/setfl_files
-LMP_DATA_DIR=/home/bill-peng/Projects/BNPs
+EAM_DIR=./EAM/setfl_files
+LMP_DATA_DIR=.
 MNP_DIR=MNP
 BNP_DIR=BNP
 CS_DIR=CS

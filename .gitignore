@@ -5,3 +5,5 @@ __pycache__/
 MNP/
 BNP/
 TNP/
+lmpBNPCS.log
+log.lammps
