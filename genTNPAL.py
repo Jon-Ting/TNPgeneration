@@ -70,6 +70,8 @@ def genTNP(obj, element1, element2, element3, ele1Ratio, ele2Ratio, ele3Ratio, d
         # randList = rand(len(obj))  # Uniform distribution
         # for (i, atom) in enumerate(obj):
         #      if randList[i] > (100 - ele3Ratio) / 100: atom.symbol = element3
+    elif distrib1 == 'L10' and distrib2 == 'L10':
+        pass  # TODO LL10
     elif distrib2 in ['L10', 'L12', 'RL10', 'RL12']:
         lc = eleDict[obj[0].symbol]['lc']['FCC']
         vacOffset = VACUUM_THICKNESS / 2
@@ -103,10 +105,9 @@ def writeTNP(element1, element2, element3, diameter, shape, ele1Ratio, ele2Ratio
     # Generate the new file name
     if distrib1 == 'L10' and distrib2 == 'RAL': dirName = TNP_DIR[0]
     elif distrib1 == 'RAL' and distrib2 == 'RAL': dirName = TNP_DIR[1]
-    elif distrib1 == 'L10' and distrib2 == 'L10': return # dirName = TNP_DIR[2]
-    # ele3Ratio, rep2 = '', ''  # TODO
-    
     for rep2 in range(RANDOM_DISTRIB_NO):
+        if distrib1 == 'L10' and distrib2 == 'L10':
+            ele1Ratio, ele2Ratio, ele3Ratio, rep2, dirName = 33, 33, 33, '', TNP_DIR[2]
         fileNameTNP = '{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}{11}.lmp'.format(
             element1, element2, element3, 
             diameter, shape, 
