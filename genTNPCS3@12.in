@@ -28,7 +28,9 @@ boundary    p p p  # Periodic boundaries in x-, y-, z- directions
 atom_style  atomic
 
 # --------------- ATOM DEFINITION ---------------
+## 1 in 'types 1 group' means one more type to be loaded
 read_data   ${fileName1} extra/atom/types 1 group ${element1}${element2} nocoeff  # Triple alloy systems
+## 2 in 'offset 2 1 1 1 1' means two types have been loaded
 read_data   ${fileName2} add append offset 2 1 1 1 1 shift ${xShift} ${yShift} ${zShift} group ${element3} nocoeff
 mass        1 ${mass1}
 mass        2 ${mass2}

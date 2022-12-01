@@ -98,5 +98,5 @@ for ((i=0;i<${#ELEMENT_ARR[@]};i++)); do
         done
     done
 done
-echo -e "Done!\n"
+echo -e "All Done!\n"
 
