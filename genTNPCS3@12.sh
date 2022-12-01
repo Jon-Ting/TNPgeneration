@@ -197,13 +197,13 @@ csral() {
             yBoxSize1=$(grep 'ylo yhi' $fileName1 | awk '{print $2}' | awk -F"E" 'BEGIN{OFMT="%10.10f"} {print $1 * (10 ^ $2)}')
             zBoxSize1=$(grep 'zlo zhi' $fileName1 | awk '{print $2}' | awk -F"E" 'BEGIN{OFMT="%10.10f"} {print $1 * (10 ^ $2)}')
             fileName2="$LMP_DATA_DIR/$MNP_DIR/$element3$size3$shape.lmp"
-            outFile="$LMP_DATA_DIR/$TNP_DIR/$CSRAL_DIR/$element1$element2$size2${RATIO_LIST[$l]}$((100-${RATIO_LIST[$l]}))$element3$size3${shape}CSRAL$m.lmp"
+            outFile="$LMP_DATA_DIR/$TNP_DIR/$CSRAL_DIR/$element1$element2$size2$element3$size3$shape${RATIO_LIST[$l]}$((100-${RATIO_LIST[$l]}))CSRAL$m.lmp"
             # Check if the TNP has been generated
             if test -f $outFile; then
-                echo "  $element1$element2$size2${RATIO_LIST[$l]}$((100-${RATIO_LIST[$l]}))$element3$size3${shape}CSRAL$m.lmp already generated, skipping...";
+                echo "  $element1$element2$size2$element3$size3$shape${RATIO_LIST[$l]}$((100-${RATIO_LIST[$l]}))CSRAL$m.lmp already generated, skipping...";
                 continue
             else
-                echo "  Generating $element1$element2$size2${RATIO_LIST[$l]}$((100-${RATIO_LIST[$l]}))$element3$size3${shape}CSRAL$m.lmp ..."; fi
+                echo "  Generating $element1$element2$size2$element3$size3$shape${RATIO_LIST[$l]}$((100-${RATIO_LIST[$l]}))CSRAL$m.lmp ..."; fi
             # Compute shifts in atoms when reading the core
             xBoxSize2=$(grep 'xlo xhi' $fileName2 | awk '{print $2}' | awk -F"E" 'BEGIN{OFMT="%10.10f"} {print $1 * (10 ^ $2)}')
             yBoxSize2=$(grep 'ylo yhi' $fileName2 | awk '{print $2}' | awk -F"E" 'BEGIN{OFMT="%10.10f"} {print $1 * (10 ^ $2)}')
