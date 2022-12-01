@@ -30,7 +30,7 @@ atom_style  atomic
 # --------------- ATOM DEFINITION ---------------
 ## 1 in 'types 1 group' means one more types to be loaded
 read_data   ${fileName1} extra/atom/types 1 group ${element1}${element2} nocoeff  # Triple alloy systems
-## 2 in 'offset 2 1 1 1 1' means two types have been loaded
+## the first 1 in 'offset 1 1 1 1 1' means the offset of atomic types is 1, such that start reading data from element2
 read_data   ${fileName2} add append offset 1 1 1 1 1 shift ${xShift} ${yShift} ${zShift} group ${element2}${element3} nocoeff
 mass        1 ${mass1}
 mass        2 ${mass2}
