@@ -66,13 +66,13 @@ cl10s() {
     yBoxSize1=$(grep 'ylo yhi' $fileName1 | awk '{print $2}' | awk -F"E" 'BEGIN{OFMT="%10.10f"} {print $1 * (10 ^ $2)}')
     zBoxSize1=$(grep 'zlo zhi' $fileName1 | awk '{print $2}' | awk -F"E" 'BEGIN{OFMT="%10.10f"} {print $1 * (10 ^ $2)}')
     fileName2="$LMP_DATA_DIR/$BNP_DIR/$L10_DIR/$element2$element3$size2${shape}5050L10.lmp"
-    outFile="$LMP_DATA_DIR/$TNP_DIR/$CL10S_DIR/$element1$size1$element2$element3$size3${shape}CSL10.lmp"
+    outFile="$LMP_DATA_DIR/$TNP_DIR/$CL10S_DIR/$element1$size1$element2$element3$size3${shape}CL10S.lmp"
     # Check if the TNP has been generated
     if test -f $outFile; then
-        echo "  $element1$size1$element2$element3$size3${shape}CSL10.lmp already generated, skipping...";
+        echo "  $element1$size1$element2$element3$size3${shape}CL10S.lmp already generated, skipping...";
         return
     else
-        echo "  Generating $element1$size1$element2$element3$size3${shape}CSL10.lmp ..."; fi
+        echo "  Generating $element1$size1$element2$element3$size3${shape}CL10S.lmp ..."; fi
     # Compute shifts in atoms when reading the core
     xBoxSize2=$(grep 'xlo xhi' $fileName2 | awk '{print $2}' | awk -F"E" 'BEGIN{OFMT="%10.10f"} {print $1 * (10 ^ $2)}')
     yBoxSize2=$(grep 'ylo yhi' $fileName2 | awk '{print $2}' | awk -F"E" 'BEGIN{OFMT="%10.10f"} {print $1 * (10 ^ $2)}')

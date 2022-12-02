@@ -119,7 +119,7 @@ def writeTNP(element1, element2, element3, diameter, shape, ele1Ratio, ele2Ratio
     elif distrib1 == 'RAL' and distrib2 == 'RAL': dirName = TNP_DIR[1]
     for rep2 in range(RANDOM_DISTRIB_NO):
         if distrib1 == 'L10' and distrib2 == 'L10':
-            ele1Ratio, ele2Ratio, ele3Ratio, rep2, dirName = 33, 33, 33, '', TNP_DIR[2]
+            ele1Ratio, ele2Ratio, ele3Ratio, rep2, dirName = '', '', '', '', TNP_DIR[2]
         fileNameTNP = '{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}{11}.lmp'.format(
             element1, element2, element3, 
             diameter, shape, 
