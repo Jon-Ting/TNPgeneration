@@ -18,7 +18,7 @@ TNP_DIR=TNP
 RAL_DIR=RAL
 CRSR_DIR=CRSR
 declare -a RATIO_LIST=(20 40 60 80)
-RANDOM_DISTRIB_NO=2
+RANDOM_DISTRIB_NO=3
 
 IN_TEMPLATE=genTNPCS23@12.in
 logFile=lmpBNPCS.log
@@ -85,7 +85,7 @@ crsr() {
                     xShift=$(echo "scale=3;($xBoxSize1-$xBoxSize2)/2" | bc)
                     yShift=$(echo "scale=3;($yBoxSize1-$yBoxSize2)/2" | bc)
                     zShift=$(echo "scale=3;($zBoxSize1-$zBoxSize2)/2" | bc)
-                    lmp -in ${IN_TEMPLATE} \
+                    lmp_openmpi -in ${IN_TEMPLATE} \
                                 -var element1 $element1 \
                                 -var element2 $element2 \
                                 -var element3 $element3 \

@@ -21,7 +21,7 @@ RAL_DIR=RAL
 CL10S_DIR=CL10S
 CRALS_DIR=CRALS
 declare -a RATIO_LIST=(20 40 60 80)
-RANDOM_DISTRIB_NO=2
+RANDOM_DISTRIB_NO=3
 
 IN_TEMPLATE=genTNPCS23@1.in
 logFile=lmpBNPCS.log
@@ -84,7 +84,7 @@ cl10s() {
     xShift=$(echo "scale=3;($xBoxSize1-$xBoxSize2)/2" | bc)
     yShift=$(echo "scale=3;($yBoxSize1-$yBoxSize2)/2" | bc)
     zShift=$(echo "scale=3;($zBoxSize1-$zBoxSize2)/2" | bc)
-    lmp -in ${IN_TEMPLATE} \
+    lmp_openmpi -in ${IN_TEMPLATE} \
                 -var element1 $element1 \
                 -var element2 $element2 \
                 -var element3 $element3 \
@@ -154,7 +154,7 @@ crals() {
             xShift=$(echo "scale=3;($xBoxSize1-$xBoxSize2)/2" | bc)
             yShift=$(echo "scale=3;($yBoxSize1-$yBoxSize2)/2" | bc)
             zShift=$(echo "scale=3;($zBoxSize1-$zBoxSize2)/2" | bc)
-            lmp -in ${IN_TEMPLATE} \
+            lmp_openmpi -in ${IN_TEMPLATE} \
                         -var element1 $element1 \
                         -var element2 $element2 \
                         -var element3 $element3 \

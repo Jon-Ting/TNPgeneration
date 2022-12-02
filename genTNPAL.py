@@ -41,9 +41,9 @@ def randConv(obj, element1, element2, element3, ele1Ratio, ele2Ratio, ele3Ratio,
     randGen = RandomState(rseed)
     # Put excessive element into temporary array
     idxArr = np.array([], dtype=int)
-    if diff1 > 0: idxArr = np.concatenate((idxArr, randGen.choice(a=ele1Arr, size=abs(diff1), replace=False, p=None)), dtype=int)
-    if diff2 > 0: idxArr = np.concatenate((idxArr, randGen.choice(a=ele2Arr, size=abs(diff2), replace=False, p=None)), dtype=int)
-    if diff3 > 0: idxArr = np.concatenate((idxArr, randGen.choice(a=ele3Arr, size=abs(diff3), replace=False, p=None)), dtype=int)
+    if diff1 > 0: idxArr = np.concatenate((idxArr, randGen.choice(a=ele1Arr, size=abs(diff1), replace=False, p=None)))
+    if diff2 > 0: idxArr = np.concatenate((idxArr, randGen.choice(a=ele2Arr, size=abs(diff2), replace=False, p=None)))
+    if diff3 > 0: idxArr = np.concatenate((idxArr, randGen.choice(a=ele3Arr, size=abs(diff3), replace=False, p=None)))
     # Assign atoms from this array to element with insufficient amount
     if diff1 < 0:
         if abs(diff1) > len(idxArr): diff1 = len(idxArr)

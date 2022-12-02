@@ -79,7 +79,7 @@ for ((i=0;i<${#ELEMENT_ARR[@]};i++)); do
                         xShift=$(echo "scale=3;($xBoxSize1-$xBoxSize2)/2" | bc)
                         yShift=$(echo "scale=3;($yBoxSize1-$yBoxSize2)/2" | bc)
                         zShift=$(echo "scale=3;($zBoxSize1-$zBoxSize2)/2" | bc)
-                        lmp -in ${IN_TEMPLATE} \
+                        lmp_openmpi -in ${IN_TEMPLATE} \
                                     -var element1 $element1 \
                                     -var element2 $element2 \
                                     -var mass1 $mass1 \

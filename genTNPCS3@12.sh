@@ -22,7 +22,7 @@ RAL_DIR=RAL
 CSL10_DIR=CSL10
 CSRAL_DIR=CSRAL
 declare -a RATIO_LIST=(20 40 60 80)
-RANDOM_DISTRIB_NO=2
+RANDOM_DISTRIB_NO=3
 
 IN_TEMPLATE=genTNPCS3@12.in
 logFile=lmpBNPCS.log
@@ -85,7 +85,7 @@ cs() {
     xShift=$(echo "scale=3;($xBoxSize1-$xBoxSize2)/2" | bc)
     yShift=$(echo "scale=3;($yBoxSize1-$yBoxSize2)/2" | bc)
     zShift=$(echo "scale=3;($zBoxSize1-$zBoxSize2)/2" | bc)
-    lmp -in ${IN_TEMPLATE} \
+    lmp_openmpi -in ${IN_TEMPLATE} \
                 -var element1 $element1 \
                 -var element2 $element2 \
                 -var element3 $element3 \
@@ -153,7 +153,7 @@ csl10() {
     xShift=$(echo "scale=3;($xBoxSize1-$xBoxSize2)/2" | bc)
     yShift=$(echo "scale=3;($yBoxSize1-$yBoxSize2)/2" | bc)
     zShift=$(echo "scale=3;($zBoxSize1-$zBoxSize2)/2" | bc)
-    lmp -in ${IN_TEMPLATE} \
+    lmp_openmpi -in ${IN_TEMPLATE} \
                 -var element1 $element1 \
                 -var element2 $element2 \
                 -var element3 $element3 \
@@ -223,7 +223,7 @@ csral() {
             xShift=$(echo "scale=3;($xBoxSize1-$xBoxSize2)/2" | bc)
             yShift=$(echo "scale=3;($yBoxSize1-$yBoxSize2)/2" | bc)
             zShift=$(echo "scale=3;($zBoxSize1-$zBoxSize2)/2" | bc)
-            lmp -in ${IN_TEMPLATE} \
+            lmp_openmpi -in ${IN_TEMPLATE} \
                         -var element1 $element1 \
                         -var element2 $element2 \
                         -var element3 $element3 \
