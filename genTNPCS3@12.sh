@@ -251,16 +251,15 @@ cs      ${ELEMENT_ARR[0]} ${MASS_ARR[0]} ${RADIUS_ARR[0]} \
         ${ELEMENT_ARR[2]} ${MASS_ARR[2]} ${RADIUS_ARR[2]} \
         ${FCC_LC_ARR[2]} 30 20 10
 
-csl10   ${ELEMENT_ARR[0]} ${MASS_ARR[0]} ${RADIUS_ARR[0]} \
-        ${ELEMENT_ARR[1]} ${MASS_ARR[1]} ${RADIUS_ARR[1]} \
-        ${ELEMENT_ARR[2]} ${MASS_ARR[2]} ${RADIUS_ARR[2]} \
-        ${FCC_LC_ARR[2]} 30 30 10
-
 for ((i=0;i<3;i++)); do
     for ((j=0;j<3;j++)); do
         if [ $i -eq $j ]; then continue; fi
         for ((k=0;k<3;k++)); do
             if [[ $k -eq $i || $k -eq $j ]]; then continue; fi
+            csl10   "${ELEMENT_ARR[$i]}" "${MASS_ARR[$i]}" "${RADIUS_ARR[$i]}" \
+                    "${ELEMENT_ARR[$j]}" "${MASS_ARR[$j]}" "${RADIUS_ARR[$j]}" \
+                    "${ELEMENT_ARR[$k]}" "${MASS_ARR[$k]}" "${RADIUS_ARR[$k]}" \
+                    "${FCC_LC_ARR[$k]}" 30 30 10
             csral   "${ELEMENT_ARR[$i]}" "${MASS_ARR[$i]}" "${RADIUS_ARR[$i]}" \
                     "${ELEMENT_ARR[$j]}" "${MASS_ARR[$j]}" "${RADIUS_ARR[$j]}" \
                     "${ELEMENT_ARR[$k]}" "${MASS_ARR[$k]}" "${RADIUS_ARR[$k]}" \

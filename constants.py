@@ -10,7 +10,7 @@ BNP_DIR = ['BNP/L10/', 'BNP/RAL/']  # 'BNP/CS/'
 TNP_DIR = ['TNP/L10R/', 'TNP/RRAL/', 'TNP/LL10/']  # CS, CL10S, CRALS, CSRAL, CSL10, CRSR
 GOLDEN_RATIO = (1+sqrt(5)) / 2
 VACUUM_THICKNESS = 40.0
-RANDOM_DISTRIB_NO = 2
+RANDOM_DISTRIB_NO = 3
 
 # Elements of interest & their lattice parameters
 eleDict = {'Pd':
@@ -27,7 +27,7 @@ eleDict = {'Pd':
 '''
 
 # NP diameters of interest (Angstrom)
-diameterList = [30]  # For generating MNP
+diameterList = [10, 20, 30]  # For generating MNP
 
 # Shapes of interest
 shapeList = ['SP']
