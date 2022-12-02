@@ -38,6 +38,10 @@ declare -a FCC_LC_ARR=(4.09 3.89 3.92)
 declare -a SHAPE_ARR=('SP')
 
 cl10s() {
+    # create directories for generation
+    if test ! -d "$LMP_DATA_DIR"; then mkdir "$LMP_DATA_DIR"; fi
+    if test ! -d "$LMP_DATA_DIR/$TNP_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR"; fi
+    if test ! -d "$LMP_DATA_DIR/$TNP_DIR/$CL10S_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR/$CL10S_DIR"; fi
     echo "Generating core-shell trimetallic nanoparticles:"
     echo "-----------------------------------------------"
     element1=$1 # shell element
@@ -102,6 +106,10 @@ cl10s() {
 }
 
 crals() {
+    # create directories for generation
+    if test ! -d "$LMP_DATA_DIR"; then mkdir "$LMP_DATA_DIR"; fi
+    if test ! -d "$LMP_DATA_DIR/$TNP_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR"; fi
+    if test ! -d "$LMP_DATA_DIR/$TNP_DIR/$CRALS_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR/$CRALS_DIR"; fi
     echo "Generating core-shell trimetallic nanoparticles:"
     echo "-----------------------------------------------"
     element1=$1 # shell element

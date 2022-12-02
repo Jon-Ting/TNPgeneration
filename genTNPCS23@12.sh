@@ -35,6 +35,10 @@ declare -a FCC_LC_ARR=(4.09 3.89 3.92)
 declare -a SHAPE_ARR=('SP')
 
 crsr() {
+    # create directories for generation
+    if test ! -d "$LMP_DATA_DIR"; then mkdir "$LMP_DATA_DIR"; fi
+    if test ! -d "$LMP_DATA_DIR/$TNP_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR"; fi
+    if test ! -d "$LMP_DATA_DIR/$TNP_DIR/$CRSR_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR/$CRSR_DIR"; fi
     echo "Generating core-shell trimetallic nanoparticles:"
     echo "-----------------------------------------------"
     element1=$1 # shell element

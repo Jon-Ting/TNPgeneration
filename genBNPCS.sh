@@ -31,6 +31,10 @@ declare -a SIZE_ARR=(10 20 30)
 # declare -a SHAPE_ARR=('CU' 'TH' 'RD' 'OT' 'TO' 'CO' 'DH' 'IC')
 declare -a SHAPE_ARR=('SP')
 
+# create directories for generation
+if test ! -d "$LMP_DATA_DIR"; then mkdir "$LMP_DATA_DIR"; fi
+if test ! -d "$LMP_DATA_DIR/$BNP_DIR"; then mkdir "$LMP_DATA_DIR/$BNP_DIR"; fi
+if test ! -d "$LMP_DATA_DIR/$BNP_DIR/$CS_DIR"; then mkdir "$LMP_DATA_DIR/$BNP_DIR/$CS_DIR"; fi
 echo "Generating core-shell bimetallic nanoparticles:"
 echo "-----------------------------------------------"
 for ((i=0;i<${#ELEMENT_ARR[@]};i++)); do
