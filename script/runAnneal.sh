@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -P q27
 #PBS -q normal
-#PBS -l ncpus=48,walltime=00:09:08,mem=24GB
+#PBS -l ncpus=2,walltime=03:57:18,mem=1GB,jobfs=10GB
 #PBS -l storage=scratch/q27+gdata/q27
 #PBS -l wd
 #PBS -v NJOBS,NJOB,jobName
@@ -56,7 +56,7 @@ if grep -q "re" <<< "${jobName: -2}"; then
     fi
 else initName=$jobName; fi
 if grep -q "S2" <<< "${initName: -2}"; then mkdir $initName; tar -xf ${initName::-1}1.tar.gz; fi
-mpirun -np 48 lmp_openmpi -sf opt -in $jobName.in > $initName.log
+mpirun -np 2 lmp_openmpi -sf opt -in $jobName.in > $initName.log
 
 # Post execution
 JOB_LIST=jobList; errstat=$?; tarName=$(echo $initName | awk -F'/' '{print $NF}')
@@ -97,7 +97,7 @@ if grep -q "re" <<< "${jobName: -2}"; then initName=${jobName::-2}; else initNam
 initStruct=$(grep read_data ${initName::-1}0.in | awk '{print $2}')
 numAtoms=$(grep atoms $initStruct | awk '{print $1}')
 # ncpus=$(echo "scale=0; (($numAtoms-1)/64000+1) * 48" | bc)
-ncpus=$(echo "scale=0; (($numAtoms-1)/64000+1) * 1" | bc)
+ncpus=$(echo "scale=0; (($numAtoms-1)/64000+1) * 4" | bc)
 numNode=$(echo "scale=0; ($ncpus-1)/48 + 1" | bc)
 mem=$(echo "scale=0; ($numAtoms/360000 + 1) * $ncpus/2" | bc)  # GB (for S0 only at the moment)
 wallTime=$(echo "(36*$numAtoms) / $ncpus" | bc)  # s

@@ -24,7 +24,7 @@ for (( a=0; $a<$numToSub; a++ )); do  # a := the current iteration number; a++ :
     if grep -q "re" <<< "${jobName: -2}"; then initName=${jobName::-2}; else initName=$jobName; fi
     initStruct=$(grep read_data ${initName::-1}0.in | awk '{print $2}')
     numAtoms=$(grep atoms $initStruct | awk '{print $1}')
-    ncpus=$(echo "scale=0; (($numAtoms-1)/64000+1) * 1" | bc)
+    ncpus=$(echo "scale=0; (($numAtoms-1)/64000+1) * 4" | bc)
     numNode=$(echo "scale=0; ($ncpus-1)/48 + 1" | bc)
     mem=$(echo "scale=0; ($numAtoms/360000 + 1) * $ncpus/2" | bc)  # GB (for S0 only at the moment)
     wallTime=$(echo "(36*$numAtoms) / $ncpus" | bc)  # s
