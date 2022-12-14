@@ -9,7 +9,7 @@ SIM_DATA_DIR=/scratch/$PROJECT/$USER
 SCRIPT_DIR=$HOME/TNPgeneration/script
 EXAM_LOCK=examine.lock; JOB_LIST=jobList; QUEUE_LIST=queueList; SCRIPT=runAnneal.sh
 
-maxQueueNum=20; numInQueue=$(qselect -u $USER | wc -l); numToSub=$(echo "$maxQueueNum-$numInQueue" | bc)  # qselect: select from queue is for your name; wc := word count per line; -u := username.
+maxQueueNum=10; numInQueue=$(qselect -u $USER | wc -l); numToSub=$(echo "$maxQueueNum-$numInQueue" | bc)  # qselect: select from queue is for your name; wc := word count per line; -u := username.
 echo -e "maxQueueNum: $maxQueueNum\nnumInQueue: $numInQueue\nnumToSub: $numToSub"; cd $SIM_DATA_DIR  # echo := print parameter after this command; -e := in this case, \n is translated to making a new line, similarly, \t can be translated to be tab. If lost -e them \n will be printed directly without function.
 for (( a=0; $a<$numToSub; a++ )); do  # a := the current iteration number; a++ := a=a+1
     numJobLeft=$(wc -l $SIM_DATA_DIR/$JOB_LIST | awk '{print $1}')  # awk can search objects by column, grep := search them by row.

@@ -11,7 +11,6 @@ SIM_DATA_DIR=/scratch/$PROJECT/$USER
 for inFile in $SIM_DATA_DIR/*/*/*S$STAGE.in; do
     jobPath=${inFile::-3}; dirPath=$(echo ${jobPath%/*}); unqName=$(echo $jobPath | awk -F'/' '{print $NF}')
     if [ $STAGE = 1 ]; then
-	ls $dirPath/$CONFIG_FILE
         eqState=$(grep S0eq: $dirPath/$CONFIG_FILE)
         if ! grep -q "true" <<< "$eqState"; then echo "$jobPath unequilibrated, skipping..."; continue; fi  # Skip if unequilibrated
     elif [ $STAGE = 2 ]; then

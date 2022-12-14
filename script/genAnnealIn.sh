@@ -82,7 +82,7 @@ for ((i=0;i<${#SIZE_ARR[@]};i++)); do
             sed -i "s/{INP_FILE_NAME}/$inpFileName/g" $LMP_IN_FILE
             sed -i "s/{ELEMENT1}/$element1/g" $LMP_IN_FILE
             sed -i "s/{ELEMENT2}/$element2/g" $LMP_IN_FILE
-	        sed -i "s/{ELEMENT3}/$element3/g" $LMP_IN_FILE
+	    sed -i "s/{ELEMENT3}/$element3/g" $LMP_IN_FILE
             sed -i "s|{POT_FILE}|$potFile|g" $LMP_IN_FILE
             if [ $STAGE -eq 0 ]; then
                 sed -i "s|{INP_DIR_NAME}|$inpDirName|g" $LMP_IN_FILE
