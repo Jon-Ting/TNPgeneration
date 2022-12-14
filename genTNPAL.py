@@ -128,19 +128,20 @@ def writeTNP(element1, element2, element3, diameter, shape, ele1Ratio, ele2Ratio
         )
         if not replace:
             if isfile(LMP_DATA_DIR + dirName + fileNameTNP):
-                print('      {0} already exist, skipping...'.format(fileNameTNP))
+                print('          {0} already exist, skipping...'.format(fileNameTNP))
                 return
 
         tnp = genTNP(bnp, element1, element2, element3, ele1Ratio, ele2Ratio, ele3Ratio, distrib1, distrib2, rep2)
         if not isdir('{0}{1}'.format(LMP_DATA_DIR, dirName[:-1])): mkdir('{0}{1}'.format(LMP_DATA_DIR, dirName[:-1]))
         write_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, dirName, fileNameTNP), atoms=tnp, units='metal', atom_style='atomic')
-        print('      Generated {0}, formula: {1}'.format(fileNameTNP, tnp.get_chemical_formula()))
+        print('          Generated {0}, formula: {1}'.format(fileNameTNP, tnp.get_chemical_formula()))
         if vis: view(tnp)
 
 
 def main(replace=False, vis=False):
     print('Generating TNP alloys of:')
     for diameter in diameterList:
+        if diameter != 30: continue
         print(f'\n  Size {diameter} Angstrom for:')
         for element1 in eleDict:
             for element2 in eleDict:

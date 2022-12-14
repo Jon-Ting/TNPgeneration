@@ -41,15 +41,16 @@ for ((i=0;i<${#ELEMENT_ARR[@]};i++)); do
     element1=${ELEMENT_ARR[$i]}
     mass1=${MASS_ARR[$i]}
     radius1=${RADIUS_ARR[$i]}
-    for ((j=$i+1;j<${#ELEMENT_ARR[@]};j++)); do
+    for ((j=0;j<${#ELEMENT_ARR[@]};j++)); do
         element2=${ELEMENT_ARR[$j]}
+        if [ $element1 == $element2 ]; then continue; fi
         mass2=${MASS_ARR[$j]}
         radius2=${RADIUS_ARR[$j]}
         delCutoff=$(echo "scale=3;$radius1+$radius2" | bc)
         latConst=${FCC_LC_ARR[$j]}
         # potFile="$EAM_DIR/$element1$element2.set"
         potFile="$EAM_DIR/AuPtPd.set"
-        echo "$element2@$element1 $delCutoff"
+        echo "$element2@$element1"
         # Check if EAM potential file exists
         if test -f $potFile; then echo "  Using $potFile"; else echo "  $potFile not found!"; fi
         for ((k=1;k<${#SIZE_ARR[@]};k++)); do

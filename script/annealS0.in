@@ -21,7 +21,6 @@ neigh_modify    delay 10 check yes  # Wait 10 steps after building, build only w
 # --------------- SETTINGS ---------------
 thermo          {S0_THER_INT}  # Thermodynamic output frequency
 thermo_style    custom step time temp press pe ke etotal
-fix             timeLimit all halt 1000 tlimit > {TIME_LIMIT} error soft message yes  # No more runs if time limit exceeded
 fix             zeroMomentum all momentum 1 linear 1 1 1 angular rescale  # Reset linear & angular momenta to 0 every step
 
 # --------------- SIMULATION RUNS --------------- 

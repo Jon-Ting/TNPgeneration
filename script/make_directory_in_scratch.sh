@@ -3,7 +3,7 @@ TARGET_DIR=/scratch/q27/kl1588
 
 dirs=$(find ../TNP -type d)
 for dir in $dirs; do
-	dirName=${dir:18:${#dir}}
+	dirName=${dir:7:${#dir}}
 	if [ -z $dirName ]; then continue; fi
 	if test ! -d "$TARGET_DIR/$dirName"; then mkdir "$TARGET_DIR/$dirName"; fi
 	files=$(find $dir -name "*.lmp")

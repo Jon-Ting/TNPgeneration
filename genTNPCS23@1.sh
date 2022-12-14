@@ -21,7 +21,7 @@ RAL_DIR=RAL
 CL10S_DIR=CL10S
 CRALS_DIR=CRALS
 declare -a RATIO_LIST=(20 40 60 80)
-RANDOM_DISTRIB_NO=3
+RANDOM_DISTRIB_NO=1
 
 IN_TEMPLATE=genTNPCS23@1.in
 logFile=lmpBNPCS.log
@@ -42,7 +42,6 @@ cl10s() {
     if test ! -d "$LMP_DATA_DIR"; then mkdir "$LMP_DATA_DIR"; fi
     if test ! -d "$LMP_DATA_DIR/$TNP_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR"; fi
     if test ! -d "$LMP_DATA_DIR/$TNP_DIR/$CL10S_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR/$CL10S_DIR"; fi
-    echo "Generating core-shell trimetallic nanoparticles:"
     echo "-----------------------------------------------"
     element1=$1 # shell element
     mass1=$2
@@ -57,8 +56,7 @@ cl10s() {
     delCutoff2=$(echo "scale=3;$radius2+$radius3" | bc)
     latConst=${10} # FCC_LC_ARR of the core (ie. element3)
     potFile="$EAM_DIR/AuPtPd.set"
-    echo -e "$element1@$element3 $delCutoff1 & \c"
-    echo "$element2@$element3 $delCutoff2"
+    echo -e "$element2$element3@$element1   CL10S"
     # Check if EAM potential file exists
     if test -f $potFile; then echo "  Using $potFile"; else echo "  $potFile not found!"; fi
     size1=${11}
@@ -110,7 +108,6 @@ crals() {
     if test ! -d "$LMP_DATA_DIR"; then mkdir "$LMP_DATA_DIR"; fi
     if test ! -d "$LMP_DATA_DIR/$TNP_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR"; fi
     if test ! -d "$LMP_DATA_DIR/$TNP_DIR/$CRALS_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR/$CRALS_DIR"; fi
-    echo "Generating core-shell trimetallic nanoparticles:"
     echo "-----------------------------------------------"
     element1=$1 # shell element
     mass1=$2
@@ -125,8 +122,7 @@ crals() {
     delCutoff2=$(echo "scale=3;$radius2+$radius3" | bc)
     latConst=${10} # FCC_LC_ARR of the core (ie. element3)
     potFile="$EAM_DIR/AuPtPd.set"
-    echo -e "$element1@$element3 $delCutoff1 & \c"
-    echo "$element2@$element3 $delCutoff2"
+    echo -e "$element2$element3@$element1   CRALS"
     # Check if EAM potential file exists
     if test -f $potFile; then echo "  Using $potFile"; else echo "  $potFile not found!"; fi
     size1=${11}
@@ -177,6 +173,7 @@ crals() {
     done
 }
 
+echo "Generating core-shell trimetallic nanoparticles:"
 for ((i=0;i<3;i++)); do
     for ((j=0;j<3;j++)); do
         if [ $i -eq $j ]; then continue; fi

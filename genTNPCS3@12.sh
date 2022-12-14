@@ -22,7 +22,7 @@ RAL_DIR=RAL
 CSL10_DIR=CSL10
 CSRAL_DIR=CSRAL
 declare -a RATIO_LIST=(20 40 60 80)
-RANDOM_DISTRIB_NO=3
+RANDOM_DISTRIB_NO=1
 
 IN_TEMPLATE=genTNPCS3@12.in
 logFile=lmpBNPCS.log
@@ -43,7 +43,6 @@ cs() {
     if test ! -d "$LMP_DATA_DIR"; then mkdir "$LMP_DATA_DIR"; fi
     if test ! -d "$LMP_DATA_DIR/$TNP_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR"; fi
     if test ! -d "$LMP_DATA_DIR/$TNP_DIR/$CS_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR/$CS_DIR"; fi
-    echo "Generating core-shell trimetallic nanoparticles:"
     echo "-----------------------------------------------"
     element1=$1 # shell element
     mass1=$2
@@ -58,8 +57,7 @@ cs() {
     delCutoff2=$(echo "scale=3;$radius2+$radius3" | bc)
     latConst=${10} # FCC_LC_ARR of the core (ie. element3)
     potFile="$EAM_DIR/AuPtPd.set"
-    echo -e "$element1@$element3 $delCutoff1 & \c"
-    echo "$element2@$element3 $delCutoff2"
+    echo -e "$element3@$element2@$element1   CS"
     # Check if EAM potential file exists
     if test -f $potFile; then echo "  Using $potFile"; else echo "  $potFile not found!"; fi
     size1=${11}
@@ -111,7 +109,6 @@ csl10() {
     if test ! -d "$LMP_DATA_DIR"; then mkdir "$LMP_DATA_DIR"; fi
     if test ! -d "$LMP_DATA_DIR/$TNP_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR"; fi
     if test ! -d "$LMP_DATA_DIR/$TNP_DIR/$CSL10_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR/$CSL10_DIR"; fi
-    echo "Generating core-shell trimetallic nanoparticles:"
     echo "-----------------------------------------------"
     element1=$1 # shell element
     mass1=$2
@@ -126,8 +123,7 @@ csl10() {
     delCutoff2=$(echo "scale=3;$radius2+$radius3" | bc)
     latConst=${10} # FCC_LC_ARR of the core (ie. element3)
     potFile="$EAM_DIR/AuPtPd.set"
-    echo -e "$element1@$element3 $delCutoff1 & \c"
-    echo "$element2@$element3 $delCutoff2"
+    echo -e "$element3@$element1$element2   CSL10"
     # Check if EAM potential file exists
     if test -f $potFile; then echo "  Using $potFile"; else echo "  $potFile not found!"; fi
     size1=${11}
@@ -179,7 +175,6 @@ csral() {
     if test ! -d "$LMP_DATA_DIR"; then mkdir "$LMP_DATA_DIR"; fi
     if test ! -d "$LMP_DATA_DIR/$TNP_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR"; fi
     if test ! -d "$LMP_DATA_DIR/$TNP_DIR/$CSRAL_DIR"; then mkdir "$LMP_DATA_DIR/$TNP_DIR/$CSRAL_DIR"; fi
-    echo "Generating core-shell trimetallic nanoparticles:"
     echo "-----------------------------------------------"
     element1=$1 # shell element
     mass1=$2
@@ -194,8 +189,7 @@ csral() {
     delCutoff2=$(echo "scale=3;$radius2+$radius3" | bc)
     latConst=${10} # FCC_LC_ARR of the core (ie. element3)
     potFile="$EAM_DIR/AuPtPd.set"
-    echo -e "$element1@$element3 $delCutoff1 & \c"
-    echo "$element2@$element3 $delCutoff2"
+    echo -e "$element3@$element1$element2   CSRAL"
     # Check if EAM potential file exists
     if test -f $potFile; then echo "  Using $potFile"; else echo "  $potFile not found!"; fi
     size1=${11}
@@ -246,16 +240,16 @@ csral() {
     done
 }
 
-cs      ${ELEMENT_ARR[0]} ${MASS_ARR[0]} ${RADIUS_ARR[0]} \
-        ${ELEMENT_ARR[1]} ${MASS_ARR[1]} ${RADIUS_ARR[1]} \
-        ${ELEMENT_ARR[2]} ${MASS_ARR[2]} ${RADIUS_ARR[2]} \
-        ${FCC_LC_ARR[2]} 30 20 10
-
+echo "Generating core-shell trimetallic nanoparticles:"
 for ((i=0;i<3;i++)); do
     for ((j=0;j<3;j++)); do
         if [ $i -eq $j ]; then continue; fi
         for ((k=0;k<3;k++)); do
             if [[ $k -eq $i || $k -eq $j ]]; then continue; fi
+            cs      "${ELEMENT_ARR[$i]}" "${MASS_ARR[$i]}" "${RADIUS_ARR[$i]}" \
+                    "${ELEMENT_ARR[$j]}" "${MASS_ARR[$j]}" "${RADIUS_ARR[$j]}" \
+                    "${ELEMENT_ARR[$k]}" "${MASS_ARR[$k]}" "${RADIUS_ARR[$k]}" \
+                    "${FCC_LC_ARR[$k]}" 30 20 10
             csl10   "${ELEMENT_ARR[$i]}" "${MASS_ARR[$i]}" "${RADIUS_ARR[$i]}" \
                     "${ELEMENT_ARR[$j]}" "${MASS_ARR[$j]}" "${RADIUS_ARR[$j]}" \
                     "${ELEMENT_ARR[$k]}" "${MASS_ARR[$k]}" "${RADIUS_ARR[$k]}" \

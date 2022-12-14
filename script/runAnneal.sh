@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -P q27
 #PBS -q normal
-#PBS -l ncpus=2,walltime=03:57:18,mem=1GB,jobfs=10GB
+#PBS -l ncpus=4,walltime=01:41:33,mem=2GB,jobfs=10GB
 #PBS -l storage=scratch/q27+gdata/q27
 #PBS -l wd
 #PBS -v NJOBS,NJOB,jobName
@@ -56,7 +56,7 @@ if grep -q "re" <<< "${jobName: -2}"; then
     fi
 else initName=$jobName; fi
 if grep -q "S2" <<< "${initName: -2}"; then mkdir $initName; tar -xf ${initName::-1}1.tar.gz; fi
-mpirun -np 2 lmp_openmpi -sf opt -in $jobName.in > $initName.log
+mpirun -np 4 lmp_openmpi -sf opt -in $jobName.in > $initName.log
 
 # Post execution
 JOB_LIST=jobList; errstat=$?; tarName=$(echo $initName | awk -F'/' '{print $NF}')

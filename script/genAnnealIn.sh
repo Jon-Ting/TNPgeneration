@@ -74,17 +74,16 @@ for ((i=0;i<${#SIZE_ARR[@]};i++)); do
             # Compute and substitute variables in LAMMPS input file
             elements=($(echo $inpFileName | grep -o "[A-Z][a-z]")); element1=${elements[0]}; element2=${elements[1]}; element3=${elements[2]}
             potFile=$EAM_DIR/setfl_files/AuPtPd.set; initStruct=$inpDirName$inpFileName.lmp
-            numAtoms=$(grep atoms $initStruct | awk '{print $1}'); timeLimit=$(echo "36*$numAtoms+300000" | bc)  # s
+            numAtoms=$(grep atoms $initStruct | awk '{print $1}')
             for ((k=0;k<${#ELEMENT_ARR[@]};k++)); do
                 if echo ${elements[@]} | grep -q ${ELEMENT_ARR[$k]}; then heatTemp=${MELT_TEMP_ARR[$k]}; break; else continue; fi
             done
             sed -i "s/{INP_FILE_NAME}/$inpFileName/g" $LMP_IN_FILE
             sed -i "s/{ELEMENT1}/$element1/g" $LMP_IN_FILE
             sed -i "s/{ELEMENT2}/$element2/g" $LMP_IN_FILE
-	    sed -i "s/{ELEMENT3}/$element3/g" $LMP_IN_FILE
+	        sed -i "s/{ELEMENT3}/$element3/g" $LMP_IN_FILE
             sed -i "s|{POT_FILE}|$potFile|g" $LMP_IN_FILE
             if [ $STAGE -eq 0 ]; then
-                sed -i "s/{TIME_LIMIT}/$timeLimit/g" $LMP_IN_FILE
                 sed -i "s|{INP_DIR_NAME}|$inpDirName|g" $LMP_IN_FILE
                 sed -i "s/{INIT_TEMP}/$initTemp/g" $LMP_IN_FILE
                 sed -i "s/{S0_PERIOD}/$S0period/g" $LMP_IN_FILE
@@ -92,9 +91,7 @@ for ((i=0;i<${#SIZE_ARR[@]};i++)); do
                 sed -i "s/{S0_DUMP_INT}/$S0dumpInt/g" $LMP_IN_FILE
             elif [ $STAGE -eq 1 ]; then
                 S1period=$(echo "($heatTemp-300)/$heatRate*1000" | bc)  # fs
-                timeLimit=$(echo "$timeLimit*3" | bc)  # s
                 S1dumpInt=$(echo "$S1period/$totalDumps" | bc)  # fs
-                sed -i "s/{TIME_LIMIT}/$timeLimit/g" $LMP_IN_FILE
                 sed -i "s/{INIT_TEMP}/$initTemp/g" $LMP_IN_FILE
                 sed -i "s/{HEAT_TEMP}/$heatTemp/g" $LMP_IN_FILE
                 sed -i "s/{S1_PERIOD}/$S1period/g" $LMP_IN_FILE
@@ -102,9 +99,7 @@ for ((i=0;i<${#SIZE_ARR[@]};i++)); do
                 sed -i "s/{S1_DUMP_INT}/$S1dumpInt/g" $LMP_IN_FILE
             elif [ $STAGE -eq 2 ]; then
                 S1period=$(echo "($heatTemp-300)/$heatRate*1000" | bc)  # fs
-                timeLimit=$(echo "$timeLimit*3" | bc)  # s
                 S1dumpInt=$(echo "$S1period/$totalDumps" | bc)  # fs
-                sed -i "s/{TIME_LIMIT}/$timeLimit/g" $LMP_IN_FILE
                 sed -i "s/{S1_DUMP_INT}/$S1dumpInt/g" $LMP_IN_FILE
                 sed -i "s/{HEAT_TEMP}/$heatTemp/g" $LMP_IN_FILE
                 sed -i "s/{S2_PERIOD}/$S2period/g" $LMP_IN_FILE

@@ -25,7 +25,7 @@ for inFile in $SIM_DATA_DIR/*/*/*S$STAGE.in; do
             if [ $STAGE = 2 ]; then
                 if [[ ! $(tail -n 5 $jobPath.log) =~ "ALL DONE!" ]]; then
                     doneNum=$(ls $jobPath/*min*xyz | wc -l)
-                    echo "$jobPath unfinishued, generating job script..."; cp ${jobPath}.in ${jobPath}re.in; jobPath=${jobPath}re
+                    echo "$jobPath unfinished, generating job script..."; cp ${jobPath}.in ${jobPath}re.in; jobPath=${jobPath}re
                     sed -i "0,/^.*runNum loop.*$/s//variable        remainNum equal 101-$doneNum\nvariable        loopNum loop \${remainNum}\nvariable        runNum equal \${loopNum}+$doneNum/" $jobPath.in
                     sed -i "0,/next            runNum/s//next            loopNum/" $jobPath.in
                     sed -i "0,/jump.*$/s//jump            SELF/" $jobPath.in
@@ -51,20 +51,12 @@ for inFile in $SIM_DATA_DIR/*/*/*S$STAGE.in; do
                     echo "$jobPath done, skipping..."; continue
                 fi
             elif [ $STAGE = 0 ]; then
-                #echo "$jobPath done (tmp skip)"; continue
                 eqState=$(grep S0eq: $dirPath/$CONFIG_FILE)
-                if grep -q "true" <<< "$eqState"; then echo "$jobPath equilibrated, skipping..."; continue; fi  # Skip if equilibrated
-                tnpType=$(echo $jobPath | awk -F'/' '{print $6}'); dirName=$(echo $jobPath | awk -F'/' '{print $7}')
-                # python3 vis.py $tnpType $dirName
-                eqState=$(grep S0eq: $dirPath/$CONFIG_FILE)
-                if grep -q "true" <<< "$eqState"; then echo "$jobPath equilibrated, skipping..."; continue
-                elif grep -q "false" <<< "$eqState"; then
-                    echo "$jobPath unequilibrated, generating job script..."; cp ${jobPath}.in ${jobPath}re.in; jobPath=${jobPath}re
-                    sed -i "/change/d" $jobPath.in; sed -i "/MIN/,+4d" $jobPath.in; sed -i "/reset/,+1d" $jobPath.in
-                    sed -i "0,/^.*read_data.*$/s//read_restart    ${dirName}S$STAGE.mpiio.rst/" $jobPath.in
-                    sed -i "0,/^.*pe0 equal.*$/s//variable        pe0 equal c_peAll/" $jobPath.in
-                    sed -i "0,/^.*SELF break.*$/s//if              \"\${peVar} < 0.5\" then \"jump SELF break\"/" $jobPath.in
-                fi 
+                if grep -q "true" <<< "$eqState"; then echo "$jobPath done, skipping..."; continue; fi
+                if [[ $(tail -n 5 $jobPath.log) =~ "ALL DONE!" ]]; then 
+                    echo "S0eq: true" >> $dirPath/$CONFIG_FILE
+                    echo "$jobPath done, skipping..."; continue
+                fi
             fi
         else echo "$jobPath unfinished, submitting..."; fi
     else echo "$jobPath ready, submitting..."; fi
