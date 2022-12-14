@@ -1,8 +1,8 @@
 #!/bin/bash
-#PBS -P q27
+#PBS -P hm62
 #PBS -q normal
-#PBS -l ncpus=4,walltime=01:41:33,mem=2GB,jobfs=10GB
-#PBS -l storage=scratch/q27+gdata/q27
+#PBS -l ncpus=4,walltime=01:58:39,mem=2GB
+#PBS -l storage=scratch/q27
 #PBS -l wd
 #PBS -v NJOBS,NJOB,jobName
 #PBS -M Jonathan.Ting@anu.edu.au
@@ -56,7 +56,7 @@ if grep -q "re" <<< "${jobName: -2}"; then
     fi
 else initName=$jobName; fi
 if grep -q "S2" <<< "${initName: -2}"; then mkdir $initName; tar -xf ${initName::-1}1.tar.gz; fi
-mpirun -np 4 lmp_openmpi -sf opt -in $jobName.in > $initName.log
+mpirun -np 4 lmp_openmpi -in $jobName.in > $initName.log
 
 # Post execution
 JOB_LIST=jobList; errstat=$?; tarName=$(echo $initName | awk -F'/' '{print $NF}')
@@ -92,7 +92,9 @@ while [ $i -lt $maxIter ]; do
     else touch $EXAM_LOCK; jobName=$(head -n1 $JOB_LIST); tail -n+2 $JOB_LIST > $JOB_LIST.2; mv $JOB_LIST.2 $JOB_LIST || continue; break; fi
 done
 if [ $i -gt $maxIter ]; then echo "Waited for too long! Check $EXAM_LOCK"; exit 1; fi
-NJOB=$(($NJOB+1)); SCRIPT_DIR=/g/data/$PROJECT/$USER
+NJOB=$(($NJOB+1))
+# SCRIPT_DIR=/g/data/$PROJECT/$USER
+SCRIPT_DIR=$HOME/TNPgeneration/script
 if grep -q "re" <<< "${jobName: -2}"; then initName=${jobName::-2}; else initName=$jobName; fi
 initStruct=$(grep read_data ${initName::-1}0.in | awk '{print $2}')
 numAtoms=$(grep atoms $initStruct | awk '{print $1}')
@@ -112,6 +114,6 @@ hr=$(printf "%02d\n" $(echo "scale=0; $wallTime / 60 / 60" | bc))  # hr
 min=$(printf "%02d\n" $(echo "scale=0; ($wallTime-$hr*60*60) / 60" | bc))  # min
 sec=$(printf "%02d\n" $(echo "scale=0; $wallTime - $hr*60*60 - $min*60" | bc))  # s
 sed -i "0,/^.*-l ncpus=.*$/s//#PBS -l ncpus=$ncpus,walltime=$hr:$min:$sec,mem=${mem}GB/" $SCRIPT_DIR/$PBS_JOBNAME
-sed -i "0,/^.*mpirun.*$/s//mpirun -np $ncpus lmp_openmpi -sf opt -in \$jobName.in > \$initName.log/" $SCRIPT_DIR/$PBS_JOBNAME
+sed -i "0,/^.*mpirun.*$/s//mpirun -np $ncpus lmp_openmpi -in \$jobName.in > \$initName.log/" $SCRIPT_DIR/$PBS_JOBNAME
 echo -e "\nSubmitting job number $NJOB in sequence of $NJOBS jobs\n$jobName\nnumAtoms,ncpus,walltime,mem = $numAtoms,$ncpus,$hr:$min:$sec,$mem"
 qsub $SCRIPT_DIR/$PBS_JOBNAME; echo $jobName >> $QUEUE_LIST; rm -f $EXAM_LOCK

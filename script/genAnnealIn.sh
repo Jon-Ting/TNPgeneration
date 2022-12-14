@@ -20,17 +20,17 @@ STAGE=$1
 declare -a TYPE_ARR=('CL10S/' 'CRALS/' 'CRSR/' 'CS/' 'CSL10/' 'CSRAL/' 'L10R/' 'LL10/' 'RRAL/')
 declare -a SIZE_ARR=(30)
 declare -a ELEMENT_ARR=('Au' 'Pd' 'Pt')
-declare -a MELT_TEMP_ARR=(1600 1930 2300)
+declare -a MELT_TEMP_ARR=(1400 1900 2100)
 
-totalDumps=100  # frame (Stages 0 and 2)
+totalDumps=10  # frame (Stages 0 and 2)
 # annealDumpRate=20  # K/frame (Stages 1 and 3)
 initTemp=300  # K
 
-S0period=500000  # fs
+S0period=100000  # fs
 S0therInt=100  # fs
 S0dumpInt=$(echo "$S0period/$totalDumps" | bc)  # fs
 
-heatRate=1  # K/ps
+heatRate=10  # K/ps
 S1therInt=500  # fs
 # S1dumpInt=$(echo "$annealDumpRate/$heatRate*1000" | bc)  # fs
 
@@ -40,7 +40,8 @@ S2dumpInt=$(echo "$S2period/$totalDumps" | bc)  # fs
 
 # Set the target directories and templates with positions
 SIM_DATA_DIR=/scratch/$PROJECT/$USER
-GDATA_DIR=/g/data/$PROJECT/$USER
+# GDATA_DIR=/g/data/$PROJECT/$USER
+GDATA_DIR=$HOME
 EAM_DIR=$GDATA_DIR/TNPgeneration/EAM
 TEMPLATE_NAME=$GDATA_DIR/TNPgeneration/script/annealS$STAGE
 
