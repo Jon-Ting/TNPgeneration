@@ -67,13 +67,13 @@ for ((i=0;i<${#SIZE_ARR[@]};i++)); do
             
             # Skip if the input file already exists, otherwise copy template to target directory
             LMP_IN_FILE=${simDirName}${inpFileName}/${inpFileName}S$STAGE.in
-            if test -f $LMP_IN_FILE; then echo "      $LMP_IN_FILE exists! Skipping..."; continue; fi
+            # if test -f $LMP_IN_FILE; then echo "      $LMP_IN_FILE exists! Skipping..."; continue; fi
             cp $TEMPLATE_NAME.in ${simDirName}${inpFileName}/${inpFileName}S$STAGE.in
             echo "      Scripts copied!"
 
             # Compute and substitute variables in LAMMPS input file
             elements=($(echo $inpFileName | grep -o "[A-Z][a-z]")); element1=${elements[0]}; element2=${elements[1]}; element3=${elements[2]}
-            potFile=$EAM_DIR/setfl_files/AuPtPd.set; initStruct=$inpDirName$inpFileName.lmp
+            potFile=$EAM_DIR/setfl_files/$element1$element2$element3.set; initStruct=$inpDirName$inpFileName.lmp
             numAtoms=$(grep atoms $initStruct | awk '{print $1}')
             for ((k=0;k<${#ELEMENT_ARR[@]};k++)); do
                 if echo ${elements[@]} | grep -q ${ELEMENT_ARR[$k]}; then heatTemp=${MELT_TEMP_ARR[$k]}; break; else continue; fi
