@@ -52,7 +52,7 @@ crsr() {
     delCutoff1=$(echo "scale=3;$radius1+$radius3" | bc)
     delCutoff2=$(echo "scale=3;$radius2+$radius3" | bc)
     latConst=${10} # FCC_LC_ARR of the core (ie. element3)
-    potFile="$EAM_DIR/AuPtPd.set"
+    potFile="$EAM_DIR/$element1$element2$element3.set"
     echo -e "($element2@$element3)@($element1@$element2)   CRSR"
     # Check if EAM potential file exists
     if test -f $potFile; then echo "  Using $potFile"; else echo "  $potFile not found!"; fi

@@ -48,8 +48,7 @@ for ((i=0;i<${#ELEMENT_ARR[@]};i++)); do
         radius2=${RADIUS_ARR[$j]}
         delCutoff=$(echo "scale=3;$radius1+$radius2" | bc)
         latConst=${FCC_LC_ARR[$j]}
-        # potFile="$EAM_DIR/$element1$element2.set"
-        potFile="$EAM_DIR/AuPtPd.set"
+        potFile="$EAM_DIR/$element1$element2$element3.set"
         echo "$element2@$element1"
         # Check if EAM potential file exists
         if test -f $potFile; then echo "  Using $potFile"; else echo "  $potFile not found!"; fi
