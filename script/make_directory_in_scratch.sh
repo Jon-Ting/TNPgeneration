@@ -2,6 +2,7 @@
 # TARGET_DIR=/scratch/$PROJECT/$USER  # On Gadi
 TARGET_DIR=$HOME/TNPsimulations  # On CECS Cluster1
 
+mkdir $TARGET_DIR
 dirs=$(find ../TNP -type d)
 for dir in $dirs; do
     dirName=${dir:7:${#dir}}
