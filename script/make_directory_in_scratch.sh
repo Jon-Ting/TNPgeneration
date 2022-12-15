@@ -1,5 +1,6 @@
 #!/bin/bash
-TARGET_DIR=/scratch/$PROJECT/$USER
+# TARGET_DIR=/scratch/$PROJECT/$USER  # On Gadi
+TARGET_DIR=$HOME/TNPsimulations  # On CECS Cluster1
 
 dirs=$(find ../TNP -type d)
 for dir in $dirs; do

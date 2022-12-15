@@ -11,6 +11,8 @@
 # - Validate potential files
 
 # Define variables
+export lmp_sif="singularity exec /opt/apps/containers/lammps-20221215.sif lmp_serial"
+HPC_CLUSTER=CECS  # GADI or CECS
 EAM_DIR=./EAM/setfl_files
 LMP_DATA_DIR=.
 MNP_DIR=MNP
@@ -82,24 +84,45 @@ cl10s() {
     xShift=$(echo "scale=3;($xBoxSize1-$xBoxSize2)/2" | bc)
     yShift=$(echo "scale=3;($yBoxSize1-$yBoxSize2)/2" | bc)
     zShift=$(echo "scale=3;($zBoxSize1-$zBoxSize2)/2" | bc)
-    lmp_openmpi -in ${IN_TEMPLATE} \
-                -var element1 $element1 \
-                -var element2 $element2 \
-                -var element3 $element3 \
-                -var mass1 $mass1 \
-                -var mass2 $mass2 \
-                -var mass3 $mass3 \
-                -var fileName1 $fileName1 \
-                -var fileName2 $fileName2 \
-                -var xShift ${xShift} \
-                -var yShift ${yShift} \
-                -var zShift ${zShift} \
-                -var latType $latType \
-                -var latConst $latConst \
-                -var delCutoff $delCutoff1 \
-                -var potFile $potFile \
-                -var outFile $outFile \
-                >> $logFile
+    if [ $HPC_CLUSTER == "GADI" ]; then
+        lmp_openmpi -in ${IN_TEMPLATE} \
+                    -var element1 $element1 \
+                    -var element2 $element2 \
+                    -var element3 $element3 \
+                    -var mass1 $mass1 \
+                    -var mass2 $mass2 \
+                    -var mass3 $mass3 \
+                    -var fileName1 $fileName1 \
+                    -var fileName2 $fileName2 \
+                    -var xShift ${xShift} \
+                    -var yShift ${yShift} \
+                    -var zShift ${zShift} \
+                    -var latType $latType \
+                    -var latConst $latConst \
+                    -var delCutoff $delCutoff1 \
+                    -var potFile $potFile \
+                    -var outFile $outFile \
+                    >> $logFile
+    elif [ $HPC_CLUSTER == "CECS" ]; then
+        eval "$lmp_sif -in ${IN_TEMPLATE} \
+                       -var element1 $element1 \
+                       -var element2 $element2 \
+                       -var element3 $element3 \
+                       -var mass1 $mass1 \
+                       -var mass2 $mass2 \
+                       -var mass3 $mass3 \
+                       -var fileName1 $fileName1 \
+                       -var fileName2 $fileName2 \
+                       -var xShift ${xShift} \
+                       -var yShift ${yShift} \
+                       -var zShift ${zShift} \
+                       -var latType $latType \
+                       -var latConst $latConst \
+                       -var delCutoff $delCutoff1 \
+                       -var potFile $potFile \
+                       -var outFile $outFile \
+                       >> $logFile"
+    fi
     if [ $(grep -c 'DONE!' log.lammps) -eq 0 ]; then echo "  Error!"; else echo "  Done!"; fi
 }
 
@@ -150,24 +173,45 @@ crals() {
             xShift=$(echo "scale=3;($xBoxSize1-$xBoxSize2)/2" | bc)
             yShift=$(echo "scale=3;($yBoxSize1-$yBoxSize2)/2" | bc)
             zShift=$(echo "scale=3;($zBoxSize1-$zBoxSize2)/2" | bc)
-            lmp_openmpi -in ${IN_TEMPLATE} \
-                        -var element1 $element1 \
-                        -var element2 $element2 \
-                        -var element3 $element3 \
-                        -var mass1 $mass1 \
-                        -var mass2 $mass2 \
-                        -var mass3 $mass3 \
-                        -var fileName1 $fileName1 \
-                        -var fileName2 $fileName2 \
-                        -var xShift ${xShift} \
-                        -var yShift ${yShift} \
-                        -var zShift ${zShift} \
-                        -var latType $latType \
-                        -var latConst $latConst \
-                        -var delCutoff $delCutoff1 \
-                        -var potFile $potFile \
-                        -var outFile $outFile \
-                        >> $logFile
+	    if [ $HPC_CLUSTER == "GADI" ]; then
+	        lmp_openmpi -in ${IN_TEMPLATE} \
+                            -var element1 $element1 \
+                            -var element2 $element2 \
+                            -var element3 $element3 \
+                            -var mass1 $mass1 \
+                            -var mass2 $mass2 \
+                            -var mass3 $mass3 \
+                            -var fileName1 $fileName1 \
+                            -var fileName2 $fileName2 \
+                            -var xShift ${xShift} \
+                            -var yShift ${yShift} \
+                            -var zShift ${zShift} \
+                            -var latType $latType \
+                            -var latConst $latConst \
+                            -var delCutoff $delCutoff1 \
+                            -var potFile $potFile \
+                            -var outFile $outFile \
+                            >> $logFile
+	    elif [ $HPC_CLUSTER == "CECS" ]; then
+	        eval "$lmp_sif -in ${IN_TEMPLATE} \
+                               -var element1 $element1 \
+                               -var element2 $element2 \
+                               -var element3 $element3 \
+                               -var mass1 $mass1 \
+                               -var mass2 $mass2 \
+                               -var mass3 $mass3 \
+                               -var fileName1 $fileName1 \
+                               -var fileName2 $fileName2 \
+                               -var xShift ${xShift} \
+                               -var yShift ${yShift} \
+                               -var zShift ${zShift} \
+                               -var latType $latType \
+                               -var latConst $latConst \
+                               -var delCutoff $delCutoff1 \
+                               -var potFile $potFile \
+                               -var outFile $outFile \
+                               >> $logFile"
+	    fi
             if [ $(grep -c 'DONE!' log.lammps) -eq 0 ]; then echo "  Error!"; else echo "  Done!"; fi
         done
     done
