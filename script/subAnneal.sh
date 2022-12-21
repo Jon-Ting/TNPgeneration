@@ -9,7 +9,7 @@ SIM_DATA_DIR=/scratch/$PROJECT/$USER
 SCRIPT_DIR=$HOME/TNPgeneration/script
 EXAM_LOCK=examine.lock; JOB_LIST=jobList; QUEUE_LIST=queueList; SCRIPT=runAnneal.sh
 
-maxQueueNum=10; numInQueue=$(qselect -u $USER | wc -l); numToSub=$(echo "$maxQueueNum-$numInQueue" | bc)  # qselect: select from queue is for your name; wc := word count per line; -u := username.
+maxQueueNum=30; numInQueue=$(qselect -u $USER | wc -l); numToSub=$(echo "$maxQueueNum-$numInQueue" | bc)  # qselect: select from queue is for your name; wc := word count per line; -u := username.
 echo -e "maxQueueNum: $maxQueueNum\nnumInQueue: $numInQueue\nnumToSub: $numToSub"; cd $SIM_DATA_DIR  # echo := print parameter after this command; -e := in this case, \n is translated to making a new line, similarly, \t can be translated to be tab. If lost -e them \n will be printed directly without function.
 for (( a=0; $a<$numToSub; a++ )); do  # a := the current iteration number; a++ := a=a+1
     numJobLeft=$(wc -l $SIM_DATA_DIR/$JOB_LIST | awk '{print $1}')  # awk can search objects by column, grep := search them by row.
@@ -41,7 +41,9 @@ for (( a=0; $a<$numToSub; a++ )); do  # a := the current iteration number; a++ :
     hr=$(printf "%02d\n" $(echo "scale=0; $wallTime / 60 / 60" | bc))  # hr
     min=$(printf "%02d\n" $(echo "scale=0; ($wallTime-$hr*60*60) / 60" | bc))  # min
     sec=$(printf "%02d\n" $(echo "scale=0; $wallTime - $hr*60*60 - $min*60" | bc))  # s
-    sed -i "0,/^.*-l ncpus=.*$/s//#PBS -l ncpus=$ncpus,walltime=$hr:$min:$sec,mem=${mem}GB,jobfs=10GB/" $SCRIPT_DIR/$SCRIPT
+    hr=00
+    min=10
+    sed -i "0,/^.*-l ncpus=.*$/s//#PBS -l ncpus=$ncpus,walltime=$hr:$min:$sec,mem=${mem}GB,jobfs=2GB/" $SCRIPT_DIR/$SCRIPT
     sed -i "0,/^.*mpirun.*$/s//mpirun -np $ncpus lmp_openmpi -in \$jobName.in > \$initName.log/" $SCRIPT_DIR/$SCRIPT
     qsub -v jobName=$jobName $SCRIPT_DIR/$SCRIPT; sleep 1; echo $jobName >> $QUEUE_LIST; rm -f $EXAM_LOCK
     echo -e "Submitted $jobName\nnumAtoms,ncpus,walltime,mem = $numAtoms,$ncpus,$hr:$min:$sec,$mem"

@@ -12,7 +12,7 @@
 
 # Define variables
 export lmp_sif="singularity exec /opt/apps/containers/lammps-20221215.sif lmp_serial"
-HPC_CLUSTER=CECS  # GADI or CECS
+HPC_CLUSTER=GADI  # GADI or CECS
 EAM_DIR=./EAM/setfl_files
 LMP_DATA_DIR=.
 MNP_DIR=MNP

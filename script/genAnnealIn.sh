@@ -39,8 +39,8 @@ S2therInt=100  # fs
 S2dumpInt=$(echo "$S2period/$totalDumps" | bc)  # fs
 
 # Set the target directories and templates with positions
-# SIM_DATA_DIR=/scratch/$PROJECT/$USER  # For Gadi
-SIM_DATA_DIR=$HOME/TNPsimulations  # For CECS
+SIM_DATA_DIR=/scratch/$PROJECT/$USER  # For Gadi
+# SIM_DATA_DIR=$HOME/TNPsimulations  # For CECS
 # GDATA_DIR=/g/data/$PROJECT/$USER  # For Gadi q27
 GDATA_DIR=$HOME  # For Gadi hm62 & CECS
 EAM_DIR=$GDATA_DIR/TNPgeneration/EAM
@@ -69,7 +69,7 @@ for ((i=0;i<${#SIZE_ARR[@]};i++)); do
             
             # Skip if the input file already exists, otherwise copy template to target directory
             LMP_IN_FILE=${simDirName}${inpFileName}/${inpFileName}S$STAGE.in
-           # if test -f $LMP_IN_FILE; then echo "      $LMP_IN_FILE exists! Skipping..."; continue; fi
+            #if test -f $LMP_IN_FILE; then echo "      $LMP_IN_FILE exists! Skipping..."; continue; fi
             cp $TEMPLATE_NAME.in ${simDirName}${inpFileName}/${inpFileName}S$STAGE.in
             echo "      Scripts copied!"
 

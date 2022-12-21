@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script to generate all monometallic, bimetallic, and trimetallic nanoparticles from scratch. Requires MNP/, BNP/, TNP/ directories to exist
+# Script to generate all monometallic, bimetallic, and trimetallic nanoparticles from scratch. 
 # Author: Jonathan Yik Chang Ting
 # Date: 15/12/2022
 

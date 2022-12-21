@@ -4,11 +4,11 @@
 
 # --------------- PRE-PROCESSING ---------------
 clear           # Clear all memory
-variable        runNum loop 101
+variable        runNum loop 11
 variable        stepSize equal {S1_DUMP_INT}
 variable        currStep equal (${runNum}-1)*${stepSize}
 variable        heatTemp equal {HEAT_TEMP}
-variable        currTemp equal 300+(${runNum}-1)*${heatTemp}/100
+variable        currTemp equal 300+(${runNum}-1)*${heatTemp}/10
 shell           find {INP_FILE_NAME}S1/ -regex .*"\.0+"${currStep}"\..*lmp" -exec cp {} ./{INP_FILE_NAME}S1.mpiio.lmp \;
 shell           cd {INP_FILE_NAME}S2/
 
@@ -18,7 +18,7 @@ boundary        p p p  # Periodic boundaries in x-, y-, z- directions
 atom_style      atomic
 
 # --------------- ATOM DEFINITION ---------------
-read_restart    ../{INP_FILE_NAME}S1.*.mpiio.rst
+read_restart    ../{INP_FILE_NAME}S1.100000.mpiio.rst
 read_dump       ../{INP_FILE_NAME}S1.mpiio.lmp ${currStep} x y z box yes purge yes replace no add keep
 reset_timestep  0
 
@@ -60,7 +60,7 @@ shell           cd ../
 jump            {INP_FILE_NAME}S2.in
 
 # --------------- OVERALL DONE ---------------
-shell           rm {INP_FILE_NAME}S1.mpiio.xyz
+shell           rm {INP_FILE_NAME}S1.mpiio.lmp
 print           ""
 print           "ALL DONE!"
 print           "------------------------------------------------------------------------------------------------------------------------------"

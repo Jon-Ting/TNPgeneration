@@ -12,7 +12,7 @@
 
 # Define variables
 export lmp_sif="singularity exec /opt/apps/containers/lammps-20221215.sif lmp_serial"
-HPC_CLUSTER=CECS  # GADI or CECS
+HPC_CLUSTER=GADI  # GADI or CECS
 EAM_DIR=./EAM/setfl_files
 LMP_DATA_DIR=.
 BNP_DIR=BNP
@@ -20,7 +20,7 @@ TNP_DIR=TNP
 RAL_DIR=RAL
 CRSR_DIR=CRSR
 declare -a RATIO_LIST=(20 40 60 80)
-RANDOM_DISTRIB_NO=1
+RANDOM_DISTRIB_NO=3
 
 IN_TEMPLATE=genTNPCS23@12.in
 logFile=lmpBNPCS.log
