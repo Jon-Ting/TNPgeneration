@@ -1,4 +1,4 @@
-# REAME file for EAM directory
+# README file for EAM directory
 # Author: Jonathan Yik Chang Ting
 # Date: 10/10/2020
 
