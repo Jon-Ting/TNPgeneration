@@ -359,7 +359,7 @@ subroutine INITIAL
         end if
         if(in_surf_flag==1) then
             print*,' '
-            print "(a30,f10.1,a20,i10,a30)",' -Surface particle search using',in_cone_angle,       &
+            print "(a35,f10.1,a20,i10,a30)",' -Surface particle search using',in_cone_angle,       &
             'degree cone with',in_surf_points,'sphere point distribution'
             print*,' '
         end if        
@@ -861,14 +861,14 @@ subroutine SINGLE_ALLOCATE
     ALLOCATE(c_lab(natoms_max))
     ALLOCATE(flag_surf(natoms_max))
     ALLOCATE(ncord(natoms_max))
-    ALLOCATE(ncordA(natoms_max,10,10))
+    ALLOCATE(ncordA(natoms_max,12,12))
     ALLOCATE(gcn(natoms_max))
-    ALLOCATE(gcnA(natoms_max,10,10))
+    ALLOCATE(gcnA(natoms_max,12,12))
     ALLOCATE(nnlist(natoms_max,con_maxnn))
     ALLOCATE(ncordS(natoms_max))
-    ALLOCATE(ncordSA(natoms_max,10,10))
+    ALLOCATE(ncordSA(natoms_max,12,12))
     ALLOCATE(gcnS(natoms_max))
-    ALLOCATE(gcnSA(natoms_max,10,10))
+    ALLOCATE(gcnSA(natoms_max,12,12))
     ALLOCATE(nnlistS(natoms_max,con_maxnn))
     
     return
@@ -1089,11 +1089,12 @@ subroutine SINGLE_NNLIST
         do j=1, typecnt
             do k=j+1, typecnt
                 ncordA(i,j,k) = ncordA(i,j,k) + ncordA(i,k,j)
+                ncordA(i,k,j) = ncordA(i,j,k)
             end do
         end do
     end do
 
-    ! Compute generalised coordination number (taking second neighbours into accnt)
+    ! Compute generalised coordination number (taking second neighbours into account)
     gcn = 0.0_dp
     gcnA = 0.0_dp
     do i=1, natoms(frame)
@@ -1106,7 +1107,7 @@ subroutine SINGLE_NNLIST
             ncordSum = ncordSum + ncord(it1)
             if(ncord(it1)>ncordMax) ncordMax = ncord(it1)
             do k=1, typecnt
-                do l=k, typecnt
+                do l=1, typecnt
                     ncordSumA(k,l) = nCordSumA(k,l) + ncordA(it1,k,l)
                     if(ncordA(it1,k,l)>ncordMaxA(k,l)) ncordMaxA(k,l) = ncordA(it1,k,l)
                 end do  
@@ -1115,7 +1116,7 @@ subroutine SINGLE_NNLIST
 
         gcn(i) = ncordSum / ncordMax
         do k=1, typecnt
-            do l=k, typecnt
+            do l=1, typecnt
                 gcnA(i,k,l) = ncordSumA(k,l) / ncordMaxA(k,l)
             end do
         end do
@@ -2393,6 +2394,7 @@ subroutine CAL_SURF_COORD
         do j=1, typecnt
             do k=j+1, typecnt
                 ncordSA(i,j,k) = ncordSA(i,j,k) + ncordSA(i,k,j)
+                ncordSA(i,k,j) = ncordSA(i,j,k)
             end do
         end do
     end do
@@ -2410,14 +2412,21 @@ subroutine CAL_SURF_COORD
             ncordSSum = ncordSSum + ncordS(it1)
             if(ncordS(it1)>ncordSMax) ncordSMax = ncordS(it1)
             do k=1, typecnt
-                do l=k, typecnt
+                do l=1, typecnt
                     ncordSSumA(k,l) = nCordSSumA(k,l) + ncordSA(it1,k,l)
                     if(ncordSA(it1,k,l)>ncordSMaxA(k,l)) ncordSMaxA(k,l) = ncordSA(it1,k,l)
                 end do  
             end do  
         end do  
+
         if(ncordSSum<1) cycle
         gcnS(i) = ncordSSum / ncordSMax
+        do k=1, typecnt
+            do l=1, typecnt
+                if(ncordSSumA(k,l)<1) cycle
+                gcnSA(i,k,l) = ncordSSumA(k,l) / ncordSMaxA(k,l)
+            end do
+        end do
     end do
      
     DEALLOCATE(ncordSSumA)
@@ -3826,7 +3835,7 @@ subroutine CAL_COORD_XYZ
     do i=1, natoms(frame)
         write(21,'(a,2x,3(F10.'//xyz_prec_str//',2X),i6,F10.1,2X)',advance='no') lc(i),xc(i),yc(i),zc(i),ncord(i),gcn(i)
         do j=1, typecnt
-            do k=j, typecnt
+            do k=1, typecnt
                 write(21,'(i6)',advance='no') ncordA(i,j,k)
                 write(21,'(F10.1,2X)',advance='no') gcnA(i,j,k)
             end do
@@ -3839,7 +3848,7 @@ subroutine CAL_COORD_XYZ
     do i=1, natoms(frame)
         write(22,'(a,2x,3(F10.'//xyz_prec_str//',2X),i6,F10.1,2X)',advance='no') lc(i),xc(i),yc(i),zc(i),ncordS(i),gcnS(i)
         do j=1, typecnt
-            do k=j, typecnt
+            do k=1, typecnt
                 write(22,'(i6)',advance='no') ncordSA(i,j,k)
                 write(22,'(F10.1,2X)',advance='no') gcnSA(i,j,k)
             end do

@@ -1,10 +1,5 @@
-/shelf/
-/workspace.xml
-.idea/
-__pycache__/
-MNP/
-BNP/
-TNP/
-lmpBNPCS.log
-log.lammps
-script/jobList.log
+initStruct/__pycache__/
+initStruct/*NP/
+initStruct/lmpBNPCS.log
+initStruct/log.lammps
+MDsim/runGenDAPfilesParallel.log
