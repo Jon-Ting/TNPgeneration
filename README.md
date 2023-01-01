@@ -1,29 +1,79 @@
 # TNPgeneration
-## Steps to generate and simulate 3D structures of sphered trimetallic nanoparticles (TNPs): 
-1. Modify properties of nanoparticles (NPs)
-    1. in constants.py
-        1. {diameterList}: NP diameters of interest (Angstrom)
-        2. {ratioList}: Ratios of interest
-        3. {RANDOM_DISTRIB_NO}: Random seeds of randomly substitution by specific ratios
-        4. {VACUUM_THICKNESS}: The size of the box that contains an NP (must be larger or equal than diameters in {diameterList})
-    2. in genBNPCS.sh
-        1. {SIZE_ARR}: NP diameters of interest (Angstrom)
-    3. in genTNPCS*.sh
-        1. SIZE_ARR: Last three arguments representing NP diameters of interest (Angstrom) when calling the functions in this script
-        2. {RATIO_LIST}: Ratios of interest
-        3. {RANDOM_DISTRIB_NO}: Random seeds of randomly substitution by specific ratios
+This repository contains code written for generation of AuPtPd trimetallic nanoparticles (TNPs) structural data set for machine learning applications.
+
+Conducted by: Kaihan Lu assisted by Haotai Peng (Bill)
+Supervised by: Jonathan Yik Chang Ting and Amanda Barnard
+Institution: School of Computing Australian National University
+Research course: SCNC2021 Science Research Project
+Date Accomplished: 1/1/23
+
+
+## Contents of each directory
+- initStruct: LAMMPS, Python, and Bash scripts written for generation of TNP initial structures (.lmp format)
+- EAM: Modified LAMMPS tools for the generation of relevant interatomic potential files required for LAMMPS scripts execution
+- MDsim: LAMMPS, Python, and Bash scripts written for tasks related to molecular dynamics (MD) simulations of the generated TNPs
+- featExt: Python and Bash scripts written for tasks related to feature extraction of TNPs
+- NCPac: Fortran software source code, executable file, and input files for structural/geometrical feature extraction of TNPs
+
+
+## Instructions to use the repository to generate more TNPs structural data
+- The current script is designed to:
+    - only generate TNPs with different combinations of the listed degrees of freedom, but extension is possible by appropriate modification of the code.
+    - be run on high performance computing cluster such as Gadi of National Computational Infrastructure or cluster1 of ANU College of Engineering and Computer Science.
+
+## Degrees of freedom of TNPs generated
+- Elemental composition: Au, Pt, Pd
+- Size: 30 Angstroms
+- Shape: Spherical
+- Ratio: i:j:k where i, j, k are from {2, 4, 6, 8}, with an additional constraint if i+j+k == 10
+- Atomic ordering: (chosen with reference to Figure 2 in the review by Crawley et al, Heterogenous Trimetallic Nanoparticles as Catalysts, Chem. Rev. 2022, 122, 6, 6795--6849)
+    - CS: random solid solution (M1M2M3)
+    - # TODO: Fill in the rest of the types according to the reference
+
+### Generation of TNP initial structures
+1. Modify the variables in the files below under ./initStruct/ to generate other combinations:
+    - constants.py
+        - {diameterList}: NP diameters (Angstrom)
+        - {ratioList}: Percentage of each element (only ratio combinations that add up to 100% will be generated)
+        - {RANDOM_DISTRIB_NO}: Number of replicas for atomic orderings involving random distribution
+        - {VACUUM_THICKNESS}: Size of the box containing the NP (need to be >= greatest diameter in {diameterList})
+    - genBNPCS.sh
+        - {SIZE_ARR}: NP diameters (Angstrom)
+    - genTNPCS*.sh
+        - Last three arguments representing NP diameters (Angstrom) of each component when calling the functions in these scripts
+        - {RATIO_LIST}: Percentage of each element (only ratio combinations that add up to 100% will be generated)
+        - {RANDOM_DISTRIB_NO}: Number of replicas for atomic orderings involving random distribution
+        - *Note: Some NPs that are supposed to be TNPs turned out to be BNP due to overly large overlap cutoff in genTNPCS*.sh.
 2. Run genMBTNPs.sh to generate the TNPs to be simulated.
-3. Run setupMDsim.sh. This places each .lmp file into a unique directory in /scratch/, while initialising a config.yml file for each directory.
-4. Check that parameter choices in annealS{0/1/2}.in template LAMMPS scripts are alright.
-5. Modify the parameters in genAnnealIn.sh as appropriate and run them, taking stage number as argument {0, 1, 2}.
-6. Run jobList.sh, taking stage number as argument {0, 1, 2}. This bash script automatically places jobs that are ready into a jobList file and keeps track of their state -- whether it's not submitted, queuing, or running (requires jobList, queueList, runList to be generated under /scratch/$PROJECT/$USER/ directory). Also checks when the simulations are done and automatically place the next stage into the jobList file.
-7. Modify maxQueueNum in subAnneal.sh and run it. This bash script automatically submits {maxQueueNum} of job scripts listed in the jobList file to Gadi. Once a job finishes, it will automatically submit the next job from jobList to Gadi, keeping the number of jobs submitted the same (i.e. {maxQueueNum}) until there are no more jobs in jobList.
 
-## Steps to get the features of TNPs after simulating
-1. Modify variables above the functions in genDAPfilesParallel.py to suit for your use.
-2. Submit runGenDAPfilesParallel.sh to HPC and wait for the results.
-3. Modify variables in mergeFeatures.py and run it to get completed AuPtPd_nanoparticle_dataset.csv.
+### Simulation of TNPs
+#### Stages of simulations
+- S0: Short equilibration of TNPs
+- S1: Heating up of TNPs, saving configurations along the way
+- S2: Short equilibration of the saved TNP configurations at the saved temperature
 
-Caveat:
-- The scripts are only capable of generating TNPs consisting of the element set {Au, Pt, Pd}, extension shouldn't be too difficult.
-- Some nanoparticles that are supposed to be TNPs turned out to be BNP due to overly large overlap cutoff in genTNPCS*.sh.
+#### Instructions:
+1. Go to ./MDsim/
+2. Modify the path in setupMDsim.sh as appropriate and run it. This places each .lmp file into a unique directory in the specified path to store the simulation data, while initialising a config.yml file that stores the simulation progress/status for each directory.
+3. Check that parameters that are not variables in annealS{0/1/2}.in LAMMPS script templates are appropriate according to your simulation goals.
+4. Modify the paths and parameters in genAnnealIn.sh as appropriate and run it, taking simulation stage number as argument {0, 1, 2}.
+5. Generate 3 files at the path specified in setupMDsim.sh {'jobList', 'queueList', 'runList'}
+5. Modify the path in jobList.sh as appropriate and run it, taking simulation stage number as argument {0, 1, 2}. This script:
+    - places jobs (LAMMPS running of *S{0/1/2}.in) that are ready to be run by the HPC into 'jobList'.
+    - needs to be rerun after the jobs are finished (until all jobs are done), to:
+        - update the progress of the simulations by updating config.yml in the TNP directory (whether each stage is done), and 
+        - update the status of the jobs (whether it's submitted, queuing, or running) by updating 'jobList', 'queueList', and 'runList'
+        - place the job for next stage of simulation into 'jobList'.
+6. Modify the parameters in runAnneal.sh and subAnneal.sh, and run subAnneal.sh. This script:
+    - submits {maxQueueNum} of job scripts listed in 'jobList' to the HPC. 
+    - Once a job finishes, it will automatically submit the next job from 'jobList', keeping the number of jobs submitted the same (i.e. {maxQueueNum}) until there are no more jobs in 'jobList'.
+- * delJobs.sh and rmOutFiles.sh are provided to ease the debugging/cleaning process.
+- * Remember to backup your simulation data to elsewhere when they are done.
+
+### Feature extraction of TNPs
+1. Go to ./featExt/
+2. Modify the paths and parameters in genDAPfiles.py as appropriate.
+3. Submit runGenDAPfiles.sh to the HPC. This will generate:
+    - {AuPtPd_nanoparticle_dataset.csv}, which contains the output of MD simulations of all TNPs.
+    - {features.csv}, which contains the features extracted by NCPac for all TNPs.
+4. Modify the parameters in mergeFeatures.py and run it. This will merge the information from the 2 csv files and generate a new {AuPtPd_nanoparticle_dataset.csv} following the format of dataset stored on CSIRO's Data Access Portal, such as https://data.csiro.au/collection/csiro:40669 (gold nanoparticle).
