@@ -95,6 +95,7 @@ MODULE VARIABLES
 
     !Particle type labels 
     character(len=2) :: typelist(con_maxtypes)                          !Label of type i (usually elemental symbols)
+    integer :: nlabs(con_maxtypes)                                      !Number of atoms with label of type i
     
     !Initial routine parameters   
     character(len=12) :: xyz_prec_str                                   !decimal places of xyz coordinates
@@ -996,6 +997,7 @@ subroutine SINGLE_READIN_XYZ
     integer :: flag_correctlabel
     
     flag_surf = 0
+    nlabs = 0
     read(11,*)
     read(11,*)
     do i=1, natoms(frame) 
@@ -1008,6 +1010,7 @@ subroutine SINGLE_READIN_XYZ
             if(lc(i)==typelist(j)) then
                 flag_correctlabel = 1
                 c_lab(i) = j                                            !label particle according to type            
+                nlabs(j) = nlabs(j) + 1
             end if  
         end do
         
@@ -1016,6 +1019,10 @@ subroutine SINGLE_READIN_XYZ
             print*,'ERROR - input file label different to xyz label'
             STOP
         end if
+    end do
+
+    do i=1, typecnt
+        print*,'type ',typelist(i),': ',nlabs(i)
     end do
     
     return
@@ -1678,7 +1685,7 @@ subroutine FEATUREFILE
     use VARIABLES, only: con_pi, frame, headers_done, in_delr,         &
     in_gr_points, in_sc_labs, in_chain_flag, in_surf_flag,             & 
     in_q6order_flag, in_sc_cells, in_sc_flag, in_sq_points, natoms,    &
-    typecnt
+    typecnt, nlabs
     IMPLICIT NONE 
     
     !Local      
@@ -1692,12 +1699,17 @@ subroutine FEATUREFILE
         write(90,400) 
         400 format(                                                    &
                                                          1(','),       &!Frame
-        'PARTICLES'                                     ,3(','),$)      !N_total
+        'PARTICLES'                                     ,3(','),$)      !N_total,N_bulk, N_surf 
+
+        do i=1, typecnt
+            write(90,401)
+            401   format(',',$)  !N_element 
+        end do
         
         if(in_surf_flag==1) then
-            write(90,401)
-            401 format(                                                    &
-            'SURFACE LAYER - Geometry'                      ,7(','),       &!N_bulk, N_surf,!Rmax, Rdif, Ravg, Rdif, Rstd, Rskew, Rkurt
+            write(90,402)
+            402 format(                                                    &
+            'SURFACE LAYER - Geometry'                      ,7(','),       &!Rmax, Rdif, Ravg, Rdif, Rstd, Rskew, Rkurt
             'SURFACE LAYER - Packing classification'        ,4(','),       &!100, 111, 110, 311
             'SURFACE LAYER - Curvature histogram'           ,180(','),$)    !180 angular points
         end if
@@ -1813,8 +1825,8 @@ subroutine FEATUREFILE
         end do 
         
         if(in_chain_flag==1) then
-            write(90,402)
-            402 format(                                                    &
+            write(90,475)
+            475 format(                                                    &
             'CHAIN LENGTH HISTOGRAM'                        ,20(','),$)     !20 chain lengths
         end if
         
@@ -1823,8 +1835,13 @@ subroutine FEATUREFILE
             480 format('Q6.Q6 COORDINATION'             ,69(','),$)
         end if
         
-        write(90,490)
-        490 format('HERE!',$)
+        if(in_sc_flag==1) then                                     !signature cells counts
+            write(90,490)
+            490 format('SIGNATURE CELLS '             ,4(','),$)
+        end if
+
+        write(90,499)
+        499 format('HERE!',$)
         
         write(90,*)                                                     !new line
         
@@ -1832,6 +1849,11 @@ subroutine FEATUREFILE
         !Frame number, total particles  
         write(90,500)
         500 format('      Frame',',    N Total',$)
+
+        do i=1, typecnt
+            write(90,501) i
+            501 format(', N Element',i2,$)
+        end do
         
         !Surface layer analysis 
         if(in_surf_flag==1) then        
@@ -2066,6 +2088,11 @@ subroutine FEATUREFILE
     !Write out frames and total atoms (after filtering)
     write(90,700) frame, natoms(frame) 
     700   format(i11,',',i11,$)
+
+    do i=1, typecnt
+        write(90,701) nlabs(i) 
+        701   format(',',i11,$)
+    end do
     
     return
 end 
@@ -3554,6 +3581,10 @@ subroutine CAL_COORD_HISTO
         gcn_avg_bulk(i)  = gcn_avg_bulk(i)  / gcn_cnt_bulk(i)
         gcn_avg_surf(i)  = gcn_avg_surf(i)  / gcn_cnt_surf(i)
         gcn_avg_surfo(i) = gcn_avg_surfo(i) / gcn_cnt_surfo(i)
+        if (isnan(coord_avg_surf(i))) coord_avg_surf(i) = 0
+        if (isnan(coord_avg_surfo(i))) coord_avg_surfo(i) = 0
+        if (isnan(gcn_avg_surf(i))) gcn_avg_surf(i) = 0
+        if (isnan(gcn_avg_surfo(i))) gcn_avg_surfo(i) = 0
     end do
     
     !Write out coordination statistics
@@ -4174,8 +4205,8 @@ subroutine CAL_BLENGTH
         do j=i, typecnt
             write(26,150) frame,i,j,blenavg(i,j),b_standdev(i,j),blenmax(i,j),blenmin(i,j),bondhist(i,j)
             150     format(i11,',',(9x,i2),',',(9x,i2),',',f8.3,',',f8.3,',',f8.3,',',f8.3,',',i8)     
-            write(90,151) frame,i,j,blenavg(i,j),b_standdev(i,j),blenmax(i,j),blenmin(i,j),bondhist(i,j)
-            151     format(i11,',',(9x,i2),',',(9x,i2),',',f11.3,',',f11.3,',',f11.3,',',f11.3,',',i11.6,$)    
+            write(90,151) i,j,blenavg(i,j),b_standdev(i,j),blenmax(i,j),blenmin(i,j),bondhist(i,j)
+            151     format(',',(9x,i2),',',(9x,i2),',',f11.3,',',f11.3,',',f11.3,',',f11.3,',',i11.6,$)    
         end do
     end do 
     write(26,*)
@@ -4921,7 +4952,7 @@ subroutine CAL_G3
         30  format(',',f11.6,$)
     end do
     
-    !Write out to featureset file
+    !Write out to featureset file (alternative code block)
     !write(90,31) g3_total_mean,g3_total_stdev
     !31  format(',',f11.1,',',f11.1,$)
     !do i=1, 180
@@ -5721,7 +5752,7 @@ end
 !in_sc_cells =-1 - Use self-similiarty search to find SC in xyz file
 !                  For multi-frame xyz, SC found in previous frame are
 !                  added in the search in the next frame.  This ensures
-!                  unique SC classiication amongst all frames.
+!                  unique SC classification amongst all frames.
 
 subroutine CAL_SC
     
@@ -6755,7 +6786,7 @@ subroutine CAL_SC_XYZ(con_scmax,sc_classify,sc_score,sc_orient,tsin,tcos)
         write(90,51) tempcnt(cell)
         51    format(',',i11,$)    
         
-        print*,'X:',tempcnt(cell)
+        print*,'SC ',cell,':',tempcnt(cell)
     end do            
     
     !Output xyz file with costs for each fitted SC

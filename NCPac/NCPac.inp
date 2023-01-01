@@ -19,7 +19,7 @@ Pt 3.5
 1                 - Chain analysis                                           (0=N,1=Y)  [in_chain_flag]
 1                 - Q6 ORDER ANALYSIS                                        (0=N,1=Y)  [in_q6order_flag]
 0.7               - q6(i).q6(j) min value to classify as similarily 'bonded'            [in_q6order_dotmin]
-0                 - SIGNATURE CELLS ANALYSIS                                 (0=N,1=Y)  [in_sc_flag]
+1                 - SIGNATURE CELLS ANALYSIS                                 (0=N,1=Y)  [in_sc_flag]
 0.15              - Min. avg. separation for classification accept (Angstrom)           [in_sc_cutoff]
 120               - Angular search resolution (degrees)                                 [in_sc_res]
 -1                - No. of SC to use (0 = read from file, -1 = search)                  [in_sc_cells] 
