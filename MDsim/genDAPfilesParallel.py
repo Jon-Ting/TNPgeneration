@@ -1,3 +1,4 @@
+from glob import glob
 from multiprocessing import Pool
 import os
 from os.path import isdir, exists
@@ -10,19 +11,20 @@ from zipfile import ZipFile
 
 
 # Important variables to check!
-PROJECT, USER_NAME = 'hm62', 'hd8710'
+PROJECT, USER_GROUP_ID, USER_NAME = 'p00', '564', 'jt5911'
 sourceDirs = ['CS', 'LL10', 'CL10S', 'CRALS', 'CSL10', 'L10R', 'CSRAL', 'RRAL', 'CRSR']
-sourcePaths = [f"/scratch/{PROJECT}/{USER_NAME}/{dir}" for dir in sourceDirs]
-targetDir = f"/scratch/p00/{USER_NAME}/AuPtPd"
+sourcePaths = [f"/scratch/{PROJECT}/{USER_NAME}/AuPtPd_MDsim/{dir}" for dir in sourceDirs]
+targetDir = f"/scratch/{PROJECT}/{USER_NAME}/AuPtPd"
 finalDataPath = f"{targetDir}/finalData"  # Final path to place the results
 
 numFramePerNP = 11
+zFillNum = 5
 doneFile = 'DONE.txt'
 outMDfile = 'AuPtPd_nanoparticle_dataset.csv'
 NCPacExeName, NCPacInpName = 'NCPac.exe', 'NCPac.inp'
 # workingDir = f"/home/659/{USER_NAME}/TNPgeneration/MDsim"
-path2NCPacExe = f"/home/659/{USER_NAME}/TNPgeneration/NCPac/{NCPacExeName}"
-path2NCPacInp = f"/home/659/{USER_NAME}/TNPgeneration/NCPac/{NCPacInpName}"
+path2NCPacExe = f"/home/{USER_GROUP_ID}/{USER_NAME}/TNPgeneration/NCPac/{NCPacExeName}"
+path2NCPacInp = f"/home/{USER_GROUP_ID}/{USER_NAME}/TNPgeneration/NCPac/{NCPacInpName}"
 headerLine = f"CSIRO Nanostructure Databank - AuPtPd Nanoparticle Data Set"
 
 def renameXYZs():
@@ -50,7 +52,7 @@ def renameXYZs():
             for NPconf in os.listdir(f"{NPdirPath}/{NPdir}S2"): 
                 if 'min' not in NPconf: continue  # Skip the unminimised configurations
                 oriFilePath = f"{NPdirPath}/{NPdir}S2/{NPconf}"
-                confID = str(confCnt).zfill(7)
+                confID = str(confCnt).zfill(5)
                 print(f"  Conformation ID: {confID}")
                 confDir = f"{targetDir}/{confID}"
                 if not isdir(f"{targetDir}/{confID}"): os.mkdir(confDir)
@@ -69,7 +71,7 @@ def renameXYZs():
                     f.writelines([f'{confID}.xyz       - name of xyz input file                                              [in_filexyz]'])
                 # os.system(f"head {confDir}/{NCPacInpName}")
 
-                workingList.append((confDir, confID, NPdirPath, NPdir))
+                workingList.append((confDir, confID))
                 confCnt += 1
             
             # Extract outputs from MD for each configuration
@@ -79,7 +81,7 @@ def renameXYZs():
                     for (i, line) in enumerate(f1):
                         if '- MINIMISATION -' in line and not foundMinLine: foundMinLine = True
                         elif 'Loop time of' in line and foundMinLine: 
-                            confID = str(confCnt).zfill(7)
+                            confID = str(confCnt).zfill(zFillNum)
                             temp, pres, kinE, potE, totE = prevLine.split()[2:]
                             f2.write(f"{confID},{temp},{pres},{kinE},{potE},{totE}\n")
                             confCnt += 1
@@ -98,18 +100,21 @@ def renameXYZs():
 def genDAPfiles(work):
     confDir   = work[0]
     confID    = work[1]
-    NPdirPath = work[2]
-    NPdir     = work[3]
     # Execute NCPac.exe for every directories
     os.chdir(confDir)
-    #os.system(f"./{NCPacExeName}")  # TODO: Uncomment
-    # Move .xyz, FEATURES.csv to {finalDir}  # and remove {confDir}
+    os.system(f"./{NCPacExeName}")
+    # Move .xyz, FEATURES.csv to {finalDir}
     shutil.copy(f"{confDir}/{confID}.xyz", f"{finalDataPath}/Structures")
-    if not exists(f"od_FEATURESET.csv"): 
+    if not exists(f"od_FEATURESET.csv"):  # If execution unsuccessful due to being a BNP instead of TNP
         open(f"{finalDataPath}/Features/{confID}.csv", 'w').close()
     else:
         shutil.copy(f"{confDir}/od_FEATURESET.csv", f"{finalDataPath}/Features/{confID}.csv")
-    # shutil.rmtree(f"{confDir}")
+    # Remove unnecessary files
+    for f in glob(f"*.mod"): os.remove(f)
+    for f in glob(f"fort.*"): os.remove(f)
+    for f in glob(f"ov_*"): os.remove(f)
+    for f in glob(f"od_*"): 
+        if f not 'od_FEATURESET.csv': os.remove(f)
     print(f"   {confID} Done!")
 
 
@@ -118,18 +123,18 @@ def runNCPacParallel(workingList):
     if not isdir(f"{finalDataPath}/Structures"): os.mkdir(f"{finalDataPath}/Structures")
     if not isdir(f"{finalDataPath}/Features"): os.mkdir(f"{finalDataPath}/Features")
     # Check if confDir still exists (could have been run already)
-    remainingWork = workingList  # TODO: Uncomment below and turn this back to []
-    #for workParam in workingList:
-    #    if not isdir(workParam[0]): workingList.remove(workParam)  # If removing confDir after running NCPac
-    #    if not exists(f"{workParam[0]}/od_FEATURESET.csv"): remainingWork.append(workParam)  # If not removing confDir after runnning NCPac
+    remainingWork = []  # TODO: Uncomment below and turn this back to []
+    for workParam in workingList:
+        if not isdir(workParam[0]): workingList.remove(workParam)  # If removing confDir after running NCPac
+        if not exists(f"{workParam[0]}/od_FEATURESET.csv"): remainingWork.append(workParam)  # If not removing confDir after runnning NCPac (will include BNPs too)
     with Pool() as p:
         p.map(genDAPfiles, remainingWork)
 
 
 if __name__ == '__main__':
-    workingList = renameXYZs()
+    # workingList = renameXYZs()
     # with open('workingList.pickle', 'wb') as f: pickle.dump(workingList, f)
-    # with open('workingList.pickle', 'rb') as f: workingList = pickle.load(f)
-    # runNCPacParallel(workingList)
+    with open('workingList.pickle', 'rb') as f: workingList = pickle.load(f)
+    runNCPacParallel(workingList)
     print("All DONE!")
 
