@@ -10,11 +10,6 @@
 # Date: 1/12/2020
 # Melting points (K) taken from: {Pt: 2041; Co: 1768; Pd: 1828; Au: 1337} (ref: https://www.angstromsciences.com/melting-points-of-elements-reference)
 
-# size: time/task/mem
-#   Stage 0: {20: 1/24/3; 40: 1/24/4; 80: 6/48/6; 150: 20/48/8}
-# To do:
-#     - Cite the source for melting points!
-
 # Set arguments for a stage
 STAGE=$1
 declare -a TYPE_ARR=('CL10S/' 'CRALS/' 'CRSR/' 'CS/' 'CSL10/' 'CSRAL/' 'L10R/' 'LL10/' 'RRAL/')

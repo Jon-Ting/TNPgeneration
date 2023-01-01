@@ -1,4 +1,4 @@
-# Goal: Clean working directory by removing standard error and output files generated from submitted job that completed fine
+# Goal: Clean the directory that stores simulation data by removing standard error and output files generated from submitted job that completed fine
 # Author: Jonathan Yik Chang Ting
 # Date: 10/2/2021
 

@@ -1,3 +1,6 @@
+# Goal:
+# Author: 
+# Date:
 #!/bin/bash
 TARGET_DIR=/scratch/$PROJECT/$USER  # On Gadi
 # TARGET_DIR=$HOME/TNPsimulations  # On CECS Cluster1

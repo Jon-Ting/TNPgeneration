@@ -1,3 +1,7 @@
+# Goal:
+# Author:
+# Date:
+
 # Delete all jobs in PBS
 qstat | awk '
     {
