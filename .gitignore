@@ -1,5 +1,5 @@
 initStruct/__pycache__/
 initStruct/*NP/
-initStruct/lmpBNPCS.log
+initStruct/*.log
 initStruct/log.lammps
 MDsim/runGenDAPfilesParallel.log
