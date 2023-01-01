@@ -127,9 +127,9 @@ def runNCPacParallel(workingList):
 
 
 if __name__ == '__main__':
-    # workingList = renameXYZs()
+    workingList = renameXYZs()
     # with open('workingList.pickle', 'wb') as f: pickle.dump(workingList, f)
-    with open('workingList.pickle', 'rb') as f: workingList = pickle.load(f)
-    runNCPacParallel(workingList)
+    # with open('workingList.pickle', 'rb') as f: workingList = pickle.load(f)
+    # runNCPacParallel(workingList)
     print("All DONE!")
 

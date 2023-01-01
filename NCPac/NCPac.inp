@@ -22,7 +22,7 @@ Pt 3.5
 1                 - SIGNATURE CELLS ANALYSIS                                 (0=N,1=Y)  [in_sc_flag]
 0.15              - Min. avg. separation for classification accept (Angstrom)           [in_sc_cutoff]
 120               - Angular search resolution (degrees)                                 [in_sc_res]
--1                - No. of SC to use (0 = read from file, -1 = search)                  [in_sc_cells] 
+4                 - No. of SC to use (0 = read from file, -1 = search)                  [in_sc_cells] 
 1 2 3 4           - SC labels to use (see manual for internally defined SC labels)      [in_sc_labs(i)]
 0                 - STRUCTURAL UNIT ANALYSIS                                 (0=N,1=Y)  [in_SU_flag]  
 3 3 0 0           - 1st SU to track (central particle type, no. of type1,type2,type3 particles in first nn shell) [in_nnhood(i,j)]    
