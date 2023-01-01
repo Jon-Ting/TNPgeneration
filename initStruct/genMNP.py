@@ -1,9 +1,9 @@
 # Goal: Generate initial NP structures for MD simulations
-# Author: Jonathan Yik Chang Ting
+# Authors: Jonathan Yik Chang Ting, Kaihan Lu, Haotai Peng
 # Date: 19/10/2020
 """
 Note:
-- PBC was not used during structure generation!
+- PBC was not used during structure generation
 - Abbreviations:
     - CU = cube
     - TH = tetrahedron

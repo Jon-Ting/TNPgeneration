@@ -7,7 +7,6 @@
 # Metallic radii taken from Greenwood, Norman N.; Earnshaw, Alan (1997). Chemistry of the Elements (2nd ed.). Butterworth-Heinemann. ISBN 978-0-08-037941-8
 
 # To do:
-# - Add atomic mass reference
 # - Validate potential files
 
 # Define variables
@@ -22,15 +21,10 @@ IN_TEMPLATE=genBNPCS.in
 logFile=lmpBNPCS.log
 latType=fcc
 declare -a ELEMENT_ARR=('Au' 'Pd' 'Pt')
-# declare -a ELEMENT_ARR=('Au' 'Pt' 'Pd' 'Co')
-# declare -a MASS_ARR=(58.933 106.42 195.08 196.97)
 declare -a MASS_ARR=(196.97 106.42 195.08)
-# declare -a RADIUS_ARR=(1.25 1.37 1.39 1.44)
 declare -a RADIUS_ARR=(1.44 1.37 1.39)
-# declare -a FCC_LC_ARR=(3.537 3.89 3.92 4.09)
 declare -a FCC_LC_ARR=(4.09 3.89 3.92)
 declare -a SIZE_ARR=(10 15 20 25 30)
-# declare -a SHAPE_ARR=('CU' 'TH' 'RD' 'OT' 'TO' 'CO' 'DH' 'IC')
 declare -a SHAPE_ARR=('SP')
 
 # create directories for generation
