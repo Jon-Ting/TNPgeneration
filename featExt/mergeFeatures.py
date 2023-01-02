@@ -1,7 +1,16 @@
-from csv import reader
+import csv
 import math
+from multiprocessing import Pool
+import os
+from os.path import isdir, exists
 import pandas as pd
 
+
+PROJECT, USER_NAME, ELE_COMB = 'p00', 'jt5911', 'AuPtPd'
+MDoutFName = f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}/MDout.csv"
+featSourcePath = f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}/finalData/Features"
+featEngPath = f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}/finalData/FeatEng"
+finalDataFName = f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}/finalData/{ELE_COMB}_nanoparticle_data.csv"
 
 allHeaders = ['T', 'P', 'Kinetic_E', 'Potential_E', 'Total_E', 
               'N_atom_total', 'N_Au', 'N_Pt', 'N_Pd', 'N_atom_bulk', 'N_atom_surface', 'Volume', 
@@ -77,7 +86,7 @@ allHeaders = ['T', 'P', 'Kinetic_E', 'Potential_E', 'Total_E',
               'PdAuAu_BA2_sum', 'PdAuAu_BA2_avg', 'PdAuAu_BA2_std', 'PdAuPd_BA2_sum', 'PdAuPd_BA2_avg', 'PdAuPd_BA2_std', 'PdAuPt_BA2_sum', 'PdAuPt_BA2_avg', 'PdAuPt_BA2_std', 
               'PdPdAu_BA2_sum', 'PdPdAu_BA2_avg', 'PdPdAu_BA2_std', 'PdPdPd_BA2_sum', 'PdPdPd_BA2_avg', 'PdPdPd_BA2_std', 'PdPdPt_BA2_sum', 'PdPdPt_BA2_avg', 'PdPdPt_BA2_std', 
               'PdPtAu_BA2_sum', 'PdPtAu_BA2_avg', 'PdPtAu_BA2_std', 'PdPtPd_BA2_sum', 'PdPtPd_BA2_avg', 'PdPtPd_BA2_std', 'PdPtPt_BA2_sum', 'PdPtPt_BA2_avg', 'PdPtPt_BA2_std', 
-              'PtAuAu_BA2_sum', 'PtAuAu_BA2_avg', 'PtAuAu_BA2_std', 'PtAuPd_BA2_sum', 'PtAuPd_BA2_avg', 'PtAuPd_BA2_std', 'PtAuPt_BA2_sum', 'PtAuPt_BA2_avg', 'PtAuPt_BA2_std', 
+             'PtAuAu_BA2_sum', 'PtAuAu_BA2_avg', 'PtAuAu_BA2_std', 'PtAuPd_BA2_sum', 'PtAuPd_BA2_avg', 'PtAuPd_BA2_std', 'PtAuPt_BA2_sum', 'PtAuPt_BA2_avg', 'PtAuPt_BA2_std', 
               'PtPdAu_BA2_sum', 'PtPdAu_BA2_avg', 'PtPdAu_BA2_std', 'PtPdPd_BA2_sum', 'PtPdPd_BA2_avg', 'PtPdPd_BA2_std', 'PtPdPt_BA2_sum', 'PtPdPt_BA2_avg', 'PtPdPt_BA2_std', 
               'PtPtAu_BA2_sum', 'PtPtAu_BA2_avg', 'PtPtAu_BA2_std', 'PtPtPd_BA2_sum', 'PtPtPd_BA2_avg', 'PtPtPd_BA2_std', 'PtPtPt_BA2_sum', 'PtPtPt_BA2_avg', 'PtPtPt_BA2_std', 
               
@@ -98,15 +107,20 @@ featAddList = ['Volume',
 featRepeatList = ['Kinetic_E', 'Potential_E', 'Total_E']
 
 
-def mergeReformatData(outputMD, allHeaders, featSourcePath, verbose=False):
+def mergeReformatData(outputMD, verbose=True):
     # Concatenate MD output with features extracted from NCPac
-    if verbose: print('    Concatenating CSV files...')
+    if verbose: print(f"    Concatenating CSV files for nanoparticle {outputMD[0]}...")
     df1 = pd.DataFrame(outputMD).T
     df1.columns = ['confID', 'T', 'P', 'Kinetic_E', 'Potential_E', 'Total_E']
+    if os.path.getsize(f"{featSourcePath}/{outputMD[0]}.csv") == 0: 
+        print(f"    *{outputMD[0]} is a BNP instead of TNP! Skipping...") 
+        df = pd.DataFrame(columns=allHeaders)
+        df.to_csv(f"{featEngPath}/{outputMD[0]}.csv", sep=',', header=True)
+        return
     df2 = pd.read_csv(f"{featSourcePath}/{outputMD[0]}.csv", sep=',', header=1, index_col=None)  # usecols, low_memory
     df = pd.concat([df1, df2], axis='columns')
     df.set_index(keys='confID', inplace=True)
-    # df.rename(columns=headerNamesDict, inplace=True)
+    headerList = allHeaders.copy()
 
     # Drop unused columns (TODO: check if all drops)
     # (*) means could potentially be included if figured out how to work on time-series-like data
@@ -115,11 +129,11 @@ def mergeReformatData(outputMD, allHeaders, featSourcePath, verbose=False):
     preDropColNum = len(df.columns)
     headerDropList = []
     curvStartColIdx, rdfStartColIdx, sfStartColIdx, ba1StartColIdx, btStartColIdxd, clStartColIdx = 22, 969, 1821, 2334, 12754, 13116
-    for col in featAddList: allHeaders.remove(col)  # Remove the feature names that will be added later
+    for col in featAddList: headerList.remove(col)  # Remove the feature names that will be added later
     
     headerDropList.append(5)  # - Frame index
     # Add temporary columns for individual curvature degrees
-    for i, curvColIdx in enumerate(range(curvStartColIdx, curvStartColIdx+180)): allHeaders.insert(curvColIdx, f"Curve_Deg_{i+1}")
+    for i, curvColIdx in enumerate(range(curvStartColIdx, curvStartColIdx+180)): headerList.insert(curvColIdx, f"Curve_Deg_{i+1}")
     headerDropList.extend(list(range(rdfStartColIdx, rdfStartColIdx+852)))  # - Radial distribution function values (*)
     headerDropList.extend(list(range(sfStartColIdx, sfStartColIdx+513)))  # - Structure factors (*)
     # - Individual bond angle 1 and bond angle 2 degrees (**)
@@ -137,8 +151,8 @@ def mergeReformatData(outputMD, allHeaders, featSourcePath, verbose=False):
     headerDropList.extend(list(range(clStartColIdx, clStartColIdx+20)))  # - Chain length
     df.drop(df.columns[headerDropList], axis=1, inplace=True)
     df = df[df.columns.drop(list(df.filter(regex='Type')))]  # - Types columns
-    df = df.apply(pd.to_numeric, errors='raise')  # Turning data numeric
-    df.columns = allHeaders
+    df = df.apply(pd.to_numeric, errors='coerce')  # Turning data numeric, be careful with 'coerce' option as there is a risk that blatant errors are omitted
+    df.columns = headerList
     # if verbose: print(f"        Number of columns dropped: {preDropColNum - len(df.columns)}")
     
     # Add new columns
@@ -155,40 +169,51 @@ def mergeReformatData(outputMD, allHeaders, featSourcePath, verbose=False):
         headerAddList.insert(i, curvColName)
     # Drop individual curvature degrees columns
     df.drop(df.columns[list(range(22, 22+180))], axis=1, inplace=True)
-    for i in range(1, 1+180): allHeaders.remove(f"Curve_Deg_{i}")
+    for i in range(1, 1+180): headerList.remove(f"Curve_Deg_{i}")
     # - Surface characteristics concentration   TODO: confirm formula
     df['Surf_defects_mol'] = df.apply(lambda row: (row['MM_SCN_1'] + row['MM_SCN_2'] + row['MM_SCN_3']) / row['Volume'], axis=1)
     df['Surf_micros_mol'] = df.apply(lambda row: (row['MM_SCN_4'] + row['MM_SCN_5'] + row['MM_SCN_6'] +  row['MM_SCN_7']) / row['Volume'], axis=1)
     df['Surf_facets_mol'] = df.apply(lambda row: (row['MM_SCN_8'] + row['MM_SCN_9'] + row['MM_SCN_10']) / row['Volume'], axis=1)
     # - Formation/Cohesive energy
-    E_Au, E_Pd, E_Pt = 1, 1, 1  # (unit?) To verify the source with George
-    df['Formation_E'] = df.apply(lambda row: row['Total_E'] - row['N_Au']*E_Au + row['N_Pt']*E_Pt + row['N_Pt']*E_Pt, axis=1)  # TODO: get formula
+    E_Au, E_Pd, E_Pt = 1, 1, 1  # TODO: (unit?) To verify the source with George
+    df['Formation_E'] = df.apply(lambda row: row['Total_E'] - (row['N_Au']*E_Au + row['N_Pt']*E_Pt + row['N_Pt']*E_Pt), axis=1)  # TODO: get formula
 
     # Reorder the columns
     if verbose: print('    Reordering columns...')
-    allHeaders.insert(11, 'Volume')
-    for i in range(1, 19): allHeaders.insert(22+i, headerAddList[i])
-    for col in featRepeatList: allHeaders.remove(col)  # Remove the feature names that will be added again
-    allHeaders.extend(headerAddList[-7:])
-    df = df[allHeaders]
-    return df
+    headerList.insert(11, 'Volume')
+    for i in range(1, 19): headerList.insert(22+i, headerAddList[i])
+    for col in featRepeatList: headerList.remove(col)  # Remove the feature names that will be added again
+    headerList.extend(headerAddList[-7:])
+    df = df[headerList]
+    df.to_csv(f"{featEngPath}/{outputMD[0]}.csv", sep=',', header=True)
 
 
-def concatNPfeats(MDoutFName, featSourcePath, finalDataFName, verbose=False):
-    featuresDF = pd.DataFrame(columns=allHeaders)
-    if verbose: print(f"Merging information and reformating {MDoutFName}...")
+def runMergeReformatParallel(verbose=False):
+    if verbose: print(f"Merging information and reformating data in parallel...")
+    outputMDs = []
     with open(MDoutFName, 'r') as f:
-        f.readline()
-        for (i, outputMD) in enumerate(reader(f)):
-            if verbose: print(f"\n  Nanoparticle {str(i).zfill(5)}")
-            df = mergeReformatData(outputMD, allHeaders, featSourcePath, verbose=verbose)
-            featuresDF = pd.concat([featuresDF, df], ignore_index=True)
-    featuresDF.to_csv(finalDataFName, sep=',', header=True)
+        for outputMD in csv.reader(f): 
+            if not exists(f"{featEngPath}/{outputMD[0]}.csv"):
+                outputMDs.append(outputMD)
+    with Pool() as p: p.map(mergeReformatData, outputMDs)
+
+
+def concatNPfeats(verbose=False):
+    '''Fastest option to concatenate CSV files, almost 2 order of magnitudes faster than Pandas alternative'''
+    if verbose: print(f"Concatenating processed feature CSV files...")
+    featCSVs = sorted(os.listdir(featEngPath))
+    featuresDF = pd.DataFrame(columns=allHeaders)
+    with open(finalDataFName, 'wb') as fout:
+        for (i, featCSV) in enumerate(featCSVs):
+            if os.path.getsize(f"{featEngPath}/{featCSV}") == 0: 
+                print(f"    *{featCSV} is a BNP instead of TNP! Skipping...") 
+                continue
+            with open(f"{featEngPath}/{featCSV}", 'rb') as f:
+                if i != 0: next(f)  # Skip header
+                fout.write(f.read())
 
 
 if __name__ == '__main__':
-    PROJECT, USER_NAME, ELE_COMB = 'p00', 'jt5911', 'AuPtPd'
-    MDoutFName = f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}/MDout.csv"
-    featSourcePath = f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}/finalData/Features"
-    finalDataFName = f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}/finalData/{ELE_COMB}_nanoparticle_data.csv"
-    concatNPfeats(MDoutFName, featSourcePath, finalDataFName, verbose=True)
+    if not isdir(featEngPath): os.mkdir(featEngPath)
+    runMergeReformatParallel(verbose=True)  # Parallel
+    # concatNPfeats(verbose=True)  # Serial, separate step

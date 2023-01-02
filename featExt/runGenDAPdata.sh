@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -P q27
 #PBS -q normal
-#PBS -l ncpus=1,walltime=05:00:00,mem=32GB,jobfs=0GB
+#PBS -l ncpus=1,walltime=00:30:00,mem=20GB,jobfs=0GB
 #PBS -l storage=scratch/p00
 #PBS -l wd
 #PBS -M Jonathan.Ting@anu.edu.au
@@ -10,4 +10,4 @@
 module load python3/3.11.0
 
 # python3 genDAPfiles.py > runGenDAPfiles.log  #PBS -l ncpus=48,walltime=05:00:00,mem=128GB,jobfs=0GB
-python3 mergeFeatures.py > mergeFeatures.log
+python3 mergeFeatures.py #PBS -l ncpus=1,walltime=00:30:00,mem=20GB,jobfs=0GB

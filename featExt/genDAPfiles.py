@@ -4,7 +4,6 @@ import os
 from os.path import isdir, exists
 import pandas as pd
 import pickle
-import multiprocessing
 import shutil
 import tarfile
 from zipfile import ZipFile
@@ -123,7 +122,7 @@ def runNCPacParallel(workingList):
     if not isdir(f"{finalDataPath}/Structures"): os.mkdir(f"{finalDataPath}/Structures")
     if not isdir(f"{finalDataPath}/Features"): os.mkdir(f"{finalDataPath}/Features")
     # Check if confDir still exists (could have been run already)
-    remainingWork = []  # TODO: Uncomment below and turn this back to []
+    remainingWork = []
     for workParam in workingList:
         if not isdir(workParam[0]): workingList.remove(workParam)  # If removing confDir after running NCPac
         if not exists(f"{workParam[0]}/od_FEATURESET.csv"): remainingWork.append(workParam)  # If not removing confDir after runnning NCPac (will include BNPs too)
