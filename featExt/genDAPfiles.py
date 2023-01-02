@@ -20,7 +20,7 @@ finalDataPath = f"{targetDir}/finalData"  # Final path to place the results
 numFramePerNP = 11
 zFillNum = 5
 doneFile = 'DONE.txt'
-outMDfile = 'AuPtPd_nanoparticle_dataset.csv'
+outMDfile = 'MDout.csv'
 NCPacExeName, NCPacInpName = 'NCPac.exe', 'NCPac.inp'
 # workingDir = f"/home/659/{USER_NAME}/TNPgeneration/MDsim"
 path2NCPacExe = f"/home/{USER_GROUP_ID}/{USER_NAME}/TNPgeneration/NCPac/{NCPacExeName}"
@@ -132,8 +132,8 @@ def runNCPacParallel(workingList):
 
 
 if __name__ == '__main__':
-    # workingList = renameXYZs()
-    # with open('workingList.pickle', 'wb') as f: pickle.dump(workingList, f)
+    workingList = renameXYZs()
+    with open('workingList.pickle', 'wb') as f: pickle.dump(workingList, f)
     with open('workingList.pickle', 'rb') as f: workingList = pickle.load(f)
     runNCPacParallel(workingList)
     print("All DONE!")
