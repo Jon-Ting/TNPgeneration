@@ -1,8 +1,8 @@
 #!/bin/bash
-#PBS -P hm62
+#PBS -P q27
 #PBS -q normal
 #PBS -l ncpus=8,walltime=00:20:16,mem=2GB,jobfs=2GB
-#PBS -l storage=scratch/hm62
+#PBS -l storage=scratch/q27+gdata/q27
 #PBS -l wd
 #PBS -v NJOBS,NJOB,jobName
 #PBS -M Jonathan.Ting@anu.edu.au
@@ -38,7 +38,7 @@ trap ctrl_c SIGINT
 function ctrl_c() { echo -e "\nExiting"; rm -f $EXAM_LOCK $RUN_LOCK; ls; exit 1; }
 
 # Program execution
-module load lammps
+module load lammps/29Sep2021
 SIM_DATA_DIR=/scratch/$PROJECT/$USER; QUEUE_LIST=queueList; RUN_LIST=runList
 dirName=$(echo ${jobName%/*}); unqName=$(echo $jobName | awk -F'/' '{print $NF}')
 if test -f $dirName/$RUN_LOCK; then
@@ -98,7 +98,6 @@ SCRIPT_DIR=$HOME/TNPgeneration/MDsim
 if grep -q "re" <<< "${jobName: -2}"; then initName=${jobName::-2}; else initName=$jobName; fi
 initStruct=$(grep read_data ${initName::-1}0.in | awk '{print $2}')
 numAtoms=$(grep atoms $initStruct | awk '{print $1}')
-# ncpus=$(echo "scale=0; (($numAtoms-1)/64000+1) * 48" | bc)
 ncpus=$(echo "scale=0; (($numAtoms-1)/64000+1) * 4" | bc)
 numNode=$(echo "scale=0; ($ncpus-1)/48 + 1" | bc)
 mem=$(echo "scale=0; ($numAtoms/360000 + 1) * $ncpus/2" | bc)  # GB (for S0 only at the moment)
@@ -113,9 +112,6 @@ fi
 hr=$(printf "%02d\n" $(echo "scale=0; $wallTime / 60 / 60" | bc))  # hr
 min=$(printf "%02d\n" $(echo "scale=0; ($wallTime-$hr*60*60) / 60" | bc))  # min
 sec=$(printf "%02d\n" $(echo "scale=0; $wallTime - $hr*60*60 - $min*60" | bc))  # s
-hr=00
-min=20
-mem=2
 sed -i "0,/^.*-l ncpus=.*$/s//#PBS -l ncpus=$ncpus,walltime=$hr:$min:$sec,mem=${mem}GB/" $SCRIPT_DIR/$PBS_JOBNAME
 sed -i "0,/^.*mpirun.*$/s//mpirun -np $ncpus lmp_openmpi -in \$jobName.in > \$initName.log/" $SCRIPT_DIR/$PBS_JOBNAME
 echo -e "\nSubmitting job number $NJOB in sequence of $NJOBS jobs\n$jobName\nnumAtoms,ncpus,walltime,mem = $numAtoms,$ncpus,$hr:$min:$sec,$mem"

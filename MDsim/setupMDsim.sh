@@ -1,7 +1,8 @@
-# Goal:
+#!/bin/bash
+# Goal: Places each initial TNP structure into a unique directory in a specified path to store the simulation data, while initialising a config.yml file that stores the simulation progress/status for each directory.
 # Author: 
 # Date:
-#!/bin/bash
+
 TARGET_DIR=/scratch/$PROJECT/$USER  # On Gadi
 # TARGET_DIR=$HOME/TNPsimulations  # On CECS Cluster1
 

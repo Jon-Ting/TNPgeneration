@@ -10,7 +10,6 @@
 # Date: 1/12/2020
 # Melting points (K) taken from: {Pt: 2041; Co: 1768; Pd: 1828; Au: 1337} (ref: https://www.angstromsciences.com/melting-points-of-elements-reference)
 
-# Set arguments for a stage
 STAGE=$1
 declare -a TYPE_ARR=('CL10S/' 'CRALS/' 'CRSR/' 'CS/' 'CSL10/' 'CSRAL/' 'L10R/' 'LL10/' 'RRAL/')
 declare -a SIZE_ARR=(30)
@@ -34,7 +33,6 @@ S2period=20000  # fs
 S2therInt=100  # fs
 S2dumpInt=$(echo "$S2period/$totalDumps" | bc)  # fs
 
-# Set the target directories and templates with positions
 SIM_DATA_DIR=/scratch/$PROJECT/$USER  # For Gadi
 # SIM_DATA_DIR=$HOME/TNPsimulations  # For CECS
 # GDATA_DIR=/g/data/$PROJECT/$USER  # For Gadi q27
@@ -54,18 +52,11 @@ for ((i=0;i<${#SIZE_ARR[@]};i++)); do
         for tnpDir in $simDirName*; do 
             # Identify the targeted directories
             inpFileName=$(echo $tnpDir | grep -oP "(?<=$tnpType).*")
-            # if [ $tnpType == 'CS/' ]; then  # CS: Au150THPd40COCS
-            #     if [[ $inpFileName =~ ^[A-Z][a-z]$size[A-Z]{2}[A-Z][a-z][0-9]{2,}[A-Z]{4,}$ ]]; then true; else continue; fi
-            # elif [ $tnpType == 'L10/' ] || [ $tnpType == 'L12/' ]; then  # L10, L12: CoAu150COL10, CoPd150TOL12
-            #     if [[ $inpFileName =~ ^([A-Z][a-z]){2}$size[A-Z]{2}L1(0|2)$ ]]; then true; else continue; fi
-            # elif [ $tnpType == 'RAL/' ] || [ $tnpType == 'RCS/' ]; then  # RAL, RCS: CoAu150TO25RAL4, CoPd150TO75RCS6
-            #     if [[ $inpFileName =~ ^([A-Z][a-z]){2}$size[A-Z]{2}[0-9]{2}[A-Z]{3}[0-9]$ ]]; then true; else continue; fi
-            # fi
             echo "    $inpFileName"
             
             # Skip if the input file already exists, otherwise copy template to target directory
             LMP_IN_FILE=${simDirName}${inpFileName}/${inpFileName}S$STAGE.in
-            #if test -f $LMP_IN_FILE; then echo "      $LMP_IN_FILE exists! Skipping..."; continue; fi
+            if test -f $LMP_IN_FILE; then echo "      $LMP_IN_FILE exists! Skipping..."; continue; fi
             cp $TEMPLATE_NAME.in ${simDirName}${inpFileName}/${inpFileName}S$STAGE.in
             echo "      Scripts copied!"
 
@@ -74,9 +65,6 @@ for ((i=0;i<${#SIZE_ARR[@]};i++)); do
             echo "      Elements in sequence: $element1 $element2 $element3"
             potFile=$EAM_DIR/setfl_files/$element1$element2$element3.set; initStruct=$inpDirName$inpFileName.lmp
             numAtoms=$(grep atoms $initStruct | awk '{print $1}')
-            # for ((k=0;k<${#ELEMENT_ARR[@]};k++)); do
-            #     if echo ${elements[@]} | grep -q ${ELEMENT_ARR[$k]}; then heatTemp=${MELT_TEMP_ARR[$k]}; break; else continue; fi
-            # done
             sed -i "s/{INP_FILE_NAME}/$inpFileName/g" $LMP_IN_FILE
             sed -i "s/{ELEMENT1}/$element1/g" $LMP_IN_FILE
             sed -i "s/{ELEMENT2}/$element2/g" $LMP_IN_FILE
