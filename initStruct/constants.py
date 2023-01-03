@@ -4,10 +4,10 @@
 
 from math import sqrt
 
-LMP_DATA_DIR = './'
-MNP_DIR = 'MNP/'
-BNP_DIR = ['BNP/L10/', 'BNP/RAL/']
-TNP_DIR = ['TNP/L10R/', 'TNP/RRAL/', 'TNP/LL10/']
+LMP_DATA_DIR = '.'
+MNP_DIR = 'MNP'
+BNP_DIR = 'BNP'
+TNP_DIR = 'TNP'
 GOLDEN_RATIO = (1+sqrt(5)) / 2
 VACUUM_THICKNESS = 40.0
 RANDOM_DISTRIB_NO = 3
@@ -23,5 +23,6 @@ eleDict = {'Pd':
             {'lc': {'FCC': 4.09}}}
 diameterList = [10, 15, 20, 25, 30]  # NP diameters of interest (Angstrom)
 shapeList = ['SP']  # Shapes of interest 
-distribList = ['L10', 'RAL']  # Distributions of interest
+BNPdistribList = ['L10', 'RAL']  # BNP distributions of interest
+TNPdistribList = ['L10R', 'RRAL', 'LL10']  # TNP distributions of interest
 ratioList = [20, 40, 60, 80]  # Ratios of interest

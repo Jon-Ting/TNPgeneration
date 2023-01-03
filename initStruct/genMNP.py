@@ -102,10 +102,10 @@ def genMNP(shape, diameter, element, latConst):
 
 
 def writeMNP(element, diameter, latConst, shape, replace=False, vis=False):
-    fileName = '{0}{1}{2}.lmp'.format(element, diameter, shape)
+    fileName = f"{element}{diameter}{shape}.lmp"
     if not replace:
-        if isfile('{0}{1}{2}'.format(LMP_DATA_DIR, MNP_DIR, fileName)): 
-            print('      {0} already exist, skipping...'.format(fileName))
+        if isfile(f"{LMP_DATA_DIR}/{MNP_DIR}/{fileName}"): 
+            print(f"      {fileName} already exist, skipping...")
             return
     
     # Add vacuum
@@ -114,17 +114,17 @@ def writeMNP(element, diameter, latConst, shape, replace=False, vis=False):
     mnp.set_cell(boxSize)
     mnp.translate([VACUUM_THICKNESS / 2] * 3)
 
-    if not isdir('{0}{1}'.format(LMP_DATA_DIR, MNP_DIR[:-1])): mkdir('{0}{1}'.format(LMP_DATA_DIR, MNP_DIR[:-1]))
-    write_lammps_data(fileobj='{0}{1}{2}'.format(LMP_DATA_DIR, MNP_DIR, fileName), atoms=mnp, units='metal', atom_style='atomic')
-    print('      Generated {0}, diameter: {1:.1f} A^3, size: {2} atoms'.format(fileName, boxSize[0], mnp.get_global_number_of_atoms()))
+    if not isdir(f"{LMP_DATA_DIR}/{MNP_DIR}"): mkdir(f"{LMP_DATA_DIR}/{MNP_DIR}")
+    write_lammps_data(f"{LMP_DATA_DIR}/{MNP_DIR}/{fileName}", atoms=mnp, units='metal', atom_style='atomic')
+    print(f"      Generated {fileName}, diameter: {boxSize[0]:.1f} A^3, size: {mnp.get_global_number_of_atoms()} atoms")
     if vis: view(mnp)
 
 
 def writeMNP_sphere(element, diameter, latConst, replace=False, vis=False):
-    fileName = '{0}{1}{2}.lmp'.format(element, diameter, 'SP')
+    fileName = f"{element}{diameter}SP.lmp"
     if not replace:
-        if isfile('{0}{1}{2}'.format(LMP_DATA_DIR, MNP_DIR, fileName)):
-            print('      {0} already exist, skipping...'.format(fileName))
+        if isfile(f"{LMP_DATA_DIR}/{MNP_DIR}/{fileName}"):
+            print(f"      {fileName} already exist, skipping...")
             return
 
     # Add vacuum
@@ -136,27 +136,25 @@ def writeMNP_sphere(element, diameter, latConst, replace=False, vis=False):
 
     boxSize = [dim[i] + VACUUM_THICKNESS for (i, dim) in enumerate(mnp.cell)]  # * np.array([diameter / 10, diameter / 10, diameter / 10])
     mnp.set_cell(boxSize)
-    # mnp.translate([diameter / 2] * 3)
     mnp.translate([VACUUM_THICKNESS / 2] * 3)
 
     # Write atoms structure to a lmp file and create file if not exists
-    if not isdir('{0}{1}'.format(LMP_DATA_DIR, MNP_DIR[:-1])): mkdir('{0}{1}'.format(LMP_DATA_DIR, MNP_DIR[:-1]))
-    write_lammps_data('{0}{1}{2}'.format(LMP_DATA_DIR, MNP_DIR, fileName), atoms=mnp, units='metal', atom_style='atomic')
+    if not isdir(f"{LMP_DATA_DIR}/{MNP_DIR}"): mkdir(f"{LMP_DATA_DIR}/{MNP_DIR}")
+    write_lammps_data(f"{LMP_DATA_DIR}/{MNP_DIR}/{fileName}", atoms=mnp, units='metal', atom_style='atomic')
 
-    print('      Generated {0}, diameter: {1:.1f} A^3, size: {2} atoms'.format(fileName, boxSize[0],
-                                                                               mnp.get_global_number_of_atoms()))
+    print(f"      Generated {fileName}, diameter: {boxSize[0]:.1f} A^3, size: {mnp.get_global_number_of_atoms()} atoms")
     if vis: view(mnp)
 
 
 def main(replace=False, vis=False):
     if not isdir(LMP_DATA_DIR): mkdir(LMP_DATA_DIR)
-    print('Generating NPs with {0} Angstrom of vacuum on each dimension:'.format(VACUUM_THICKNESS))
+    print(f"Generating NPs with {VACUUM_THICKNESS} Angstrom of vacuum on each dimension:")
     for diameter in diameterList:
         # if diameter != 20:  continue  # DEBUG
-        print('\n  Size {0} Angstrom for:'.format(diameter))        
+        print(f"\n  Size {diameter} Angstrom for:")
         for element in eleDict:
             # if element is not 'Au':  continue  # DEBUG
-            print('    Element {0}:'.format(element))
+            print(f"    Element {element}:")
             latConst = eleDict[element]['lc']['FCC']
             for shape in shapeList:
                 # if shape is not 'IC':  continue  # DEBUG

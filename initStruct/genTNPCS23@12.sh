@@ -1,6 +1,6 @@
 #!/bin/bash
-# Script to generate core-shell bimetallic nanoparticles (CS BNPs).
-# Feed different parameters into the LAMMPS input template file genBNPCS.in
+# Script to generate 23@12 core-shell trimetallic nanoparticles (23@12 CS TNPs).
+# Feed different parameters into the LAMMPS input template file genTNPCS23@12.in
 # Author: Jonathan Yik Chang Ting
 # Date: 29/10/2020
 # Atomic mass taken from 

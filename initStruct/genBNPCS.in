@@ -20,7 +20,7 @@
 # To do:
 
 # --------------- INITIALIZATION ---------------
-clear              # Clear all memory
+clear  # Clear all memory
 units       metal  # Report in g/mol, A, ps, eV, K, bars
 boundary    p p p  # Periodic boundaries in x-, y-, z- directions
 atom_style  atomic

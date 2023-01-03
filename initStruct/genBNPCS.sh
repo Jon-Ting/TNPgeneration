@@ -7,6 +7,7 @@
 # Metallic radii taken from Greenwood, Norman N.; Earnshaw, Alan (1997). Chemistry of the Elements (2nd ed.). Butterworth-Heinemann. ISBN 978-0-08-037941-8
 
 # To do:
+# - Add atomic mass reference
 # - Validate potential files
 
 # Define variables
@@ -27,7 +28,7 @@ declare -a FCC_LC_ARR=(4.09 3.89 3.92)
 declare -a SIZE_ARR=(10 15 20 25 30)
 declare -a SHAPE_ARR=('SP')
 
-# create directories for generation
+# Create directories to store files generated
 if test ! -d "$LMP_DATA_DIR"; then mkdir "$LMP_DATA_DIR"; fi
 if test ! -d "$LMP_DATA_DIR/$BNP_DIR"; then mkdir "$LMP_DATA_DIR/$BNP_DIR"; fi
 if test ! -d "$LMP_DATA_DIR/$BNP_DIR/$CS_DIR"; then mkdir "$LMP_DATA_DIR/$BNP_DIR/$CS_DIR"; fi
@@ -42,9 +43,9 @@ for ((i=0;i<${#ELEMENT_ARR[@]};i++)); do
         if [ $element1 == $element2 ]; then continue; fi
         mass2=${MASS_ARR[$j]}
         radius2=${RADIUS_ARR[$j]}
-	delCutoff=$(echo "scale=3;($radius1+$radius2)/2" | bc)
+        delCutoff=$(echo "scale=3;($radius1+$radius2)/2" | bc)
         latConst=${FCC_LC_ARR[$j]}
-        potFile="$EAM_DIR/$element1$element2$element3.set"
+        potFile="$EAM_DIR/$element1$element2.set"
         echo "$element2@$element1"
         # Check if EAM potential file exists
         if test -f $potFile; then echo "  Using $potFile"; else echo "  $potFile not found!"; fi
@@ -67,7 +68,7 @@ for ((i=0;i<${#ELEMENT_ARR[@]};i++)); do
                             echo "  $element1$size1$shape1$element2$size2${shape2}CS.lmp already exists, skipping...";
                             continue
                         else
-                            echo "  Generating $element1$size1$shape1$element2$size2${shape2}CS.lmp ..."; fi
+                            echo "  Generating $element1$size1$shape1$element2$size2${shape2}CS.lmp..."; fi
                         # Compute shifts in atoms when reading the core MNP
                         xBoxSize2=$(grep 'xlo xhi' $fileName2 | awk '{print $2}')
                         yBoxSize2=$(grep 'ylo yhi' $fileName2 | awk '{print $2}')
