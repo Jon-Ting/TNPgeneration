@@ -46,7 +46,7 @@ for ((i=0;i<${#SIZE_ARR[@]};i++)); do
     size=${SIZE_ARR[$i]}
     for ((j=0;j<${#TYPE_ARR[@]};j++)); do
         tnpType=${TYPE_ARR[$j]}
-        inpDirName=$GDATA_DIR/TNPgeneration/initStruct/TNP/$tnpType
+        inpDirName=$GDATA_DIR/TNPgeneration/InitStruct/TNP/$tnpType
         simDirName=$SIM_DATA_DIR/$tnpType
         echo "  $tnpType Directory:"
         for tnpDir in $simDirName*; do 

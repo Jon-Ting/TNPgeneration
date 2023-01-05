@@ -7,7 +7,7 @@ TARGET_DIR=/scratch/$PROJECT/$USER  # On Gadi
 # TARGET_DIR=$HOME/TNPsimulations  # On CECS Cluster1
 
 mkdir $TARGET_DIR
-TNPdirs=$(find ../initStruct/TNP -type d)
+TNPdirs=$(find ../InitStruct/TNP -type d)
 for dir in $TNPdirs; do
     dirName=${dir:18:${#dir}}
     if [ -z $dirName ]; then continue; fi
