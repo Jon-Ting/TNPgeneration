@@ -1,5 +1,5 @@
-initStruct/__pycache__/
-initStruct/*NP/
-initStruct/*log*
+InitStruct/__pycache__/
+InitStruct/*NP/
+InitStruct/*log*
 MDsim/*.log
-featExt/*.log
+FeatExtEng/*.log
