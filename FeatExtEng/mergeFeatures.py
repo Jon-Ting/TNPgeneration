@@ -12,8 +12,13 @@ featSourcePath = f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}/finalData/Features"
 featEngPath = f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}/finalData/FeatEng"
 finalDataFName = f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}/finalData/{ELE_COMB}_nanoparticle_data.csv"
 
+N_AVOGADRO = 6.02214076 * 10**23  # (atoms/mol)
+elePropDict = {'Au': {'rho': 19320, 'm': 0.196967, 'cohEbulk': 3.81}, 
+               'Pt': {'rho': 21450, 'm': 0.195084, 'cohEbulk': 5.84}, 
+               'Pd': {'rho': 12020, 'm': 0.10642, 'cohEbulk': 3.89}}  # density (kg/m^3), molar mass (kg/mol), cohesive energy per atom for bulk system (eV/atom)
+
 allHeaders = ['T', 'P', 'Kinetic_E', 'Potential_E', 'Total_E', 
-              'N_atom_total', 'N_Au', 'N_Pt', 'N_Pd', 'N_atom_bulk', 'N_atom_surface', 'Volume', 
+              'N_atom_total', 'N_Au', 'N_Pt', 'N_Pd', 'N_atom_bulk', 'N_atom_surface', 'Vol_bulk_pack', 'Vol_sphere', 
               'R_min', 'R_max', 'R_diff', 'R_avg', 'R_std', 'meR_skew', 'R_kurt',
               'S_100', 'S_111', 'S_110', 'S_311', 
               'Curve_1-10', 'Curve_11-20', 'Curve_21-30', 'Curve_31-40', 'Curve_41-50', 'Curve_51-60', 'Curve_61-70', 'Curve_71-80', 'Curve_81-90', 'Curve_91-100', 'Curve_101-110', 'Curve_111-120', 'Curve_121-130', 'Curve_131-140', 'Curve_141-150', 'Curve_151-160', 'Curve_161-170', 'Curve_171-180',
@@ -100,11 +105,35 @@ allHeaders = ['T', 'P', 'Kinetic_E', 'Potential_E', 'Total_E',
               'FCC', 'HCP', 'ICOS', 'DECA', 
               'Surf_defects_mol', 'Surf_micros_mol', 'Surf_facets_mol', 
               'Formation_E']
-featAddList = ['Volume', 
+featAddList = ['Vol_bulk_pack', 'Vol_sphere', 
                'Curve_1-10', 'Curve_11-20', 'Curve_21-30', 'Curve_31-40', 'Curve_41-50', 'Curve_51-60', 'Curve_61-70', 'Curve_71-80', 'Curve_81-90', 'Curve_91-100', 'Curve_101-110', 'Curve_111-120', 'Curve_121-130', 'Curve_131-140', 'Curve_141-150', 'Curve_151-160', 'Curve_161-170', 'Curve_171-180',
                'Surf_defects_mol', 'Surf_micros_mol', 'Surf_facets_mol', 
                'Formation_E']
 featRepeatList = ['Kinetic_E', 'Potential_E', 'Total_E']
+
+
+def calcBulkPackVol(row):
+    elements = [ELE_COMB[i:i+2] for i in range(0, len(ELE_COMB), 2)]  # Split ELE_COMB into list of 2 alphabets
+    totalVol = 0
+    for element in elements:
+        volEle = row[f"N_{element}"]*elePropDict[element]['m']/elePropDict[element]['rho']/N_AVOGADRO 
+        totalVol += volEle
+    return totalVol
+
+
+def calcSurfSiteRatio(row, element, siteType):
+    if siteType == 'defects': return sum(row[f"{element}M_SCN_1"], row[f"{element}M_SCN_2"], row[f"{element}M_SCN_3"])
+    if siteType == 'micros': return sum(row[f"{element}M_SCN_4"], row[f"{element}M_SCN_5"], row[f"{element}M_SCN_6"], row[f"{element}M_SCN_7"])
+    if siteType == 'facets': return sum(row[f"{element}M_SCN_9"], row[f"{element}M_SCN_10"], row[f"{element}M_SCN_11"])
+    else: raise Exception(f"    {siteType} specified wrongly!")
+
+
+def calcSurfSiteConc(row, element, siteType, volType):
+    return row[f"Surf_{siteType}_{element}"] / row[f"Vol_{volType}"]
+
+
+def calcSurfSiteRatio(row, element, siteType, volType):  # TODO: Confim with Amanda
+    return row[f"Surf_{siteType}_{element}"]*elePropDict[element]['m']/elePropDict[element]['rho']/row[f"Vol_{volType}"]/N_AVOGADRO
 
 
 def mergeReformatData(outputMD, verbose=True):
@@ -157,8 +186,10 @@ def mergeReformatData(outputMD, verbose=True):
     
     # Add new columns
     if verbose: print('    Adding new columns...')
-    headerAddList = ['Volume', 'Surf_defects_mol', 'Surf_micros_mol', 'Surf_facets_mol', 'Kinetic_E', 'Potential_E', 'Total_E', 'Formation_E']
-    df['Volume'] = df.apply(lambda row: 3 / 4 * math.pi * row['R_avg']**3, axis=1)  # - Volume  # TODO: check formula with George!
+    headerAddList = ['Vol_bulk_pack', 'Vol_sphere', 'Surf_defects_mol', 'Surf_micros_mol', 'Surf_facets_mol', 'Kinetic_E', 'Potential_E', 'Total_E', 'Formation_E']
+    # - Volume= Mass / Density, Volume = 4/3*pi*r^3
+    df['Vol_bulk_pack'] = df.apply(calcBulkPackVol, axis=1)  # Assuming bulk packing 
+    df['Vol_sphere'] = df.apply(lambda row: 3 / 4 * math.pi * row['R_avg']**3, axis=1)  # Geometric volume
     # - Curvature
     endVal, curvStartColIdx = 0, 20
     for i in range(1, 19):
@@ -170,17 +201,22 @@ def mergeReformatData(outputMD, verbose=True):
     # Drop individual curvature degrees columns
     df.drop(df.columns[list(range(22, 22+180))], axis=1, inplace=True)
     for i in range(1, 1+180): headerList.remove(f"Curve_Deg_{i}")
-    # - Surface characteristics concentration   TODO: confirm formula
-    df['Surf_defects_mol'] = df.apply(lambda row: (row['MM_SCN_1'] + row['MM_SCN_2'] + row['MM_SCN_3']) / row['Volume'], axis=1)
-    df['Surf_micros_mol'] = df.apply(lambda row: (row['MM_SCN_4'] + row['MM_SCN_5'] + row['MM_SCN_6'] +  row['MM_SCN_7']) / row['Volume'], axis=1)
-    df['Surf_facets_mol'] = df.apply(lambda row: (row['MM_SCN_8'] + row['MM_SCN_9'] + row['MM_SCN_10']) / row['Volume'], axis=1)
-    # - Formation/Cohesive energy
-    E_Au, E_Pd, E_Pt = 1, 1, 1  # TODO: (unit?) To verify the source with George
-    df['Formation_E'] = df.apply(lambda row: row['Total_E'] - (row['N_Au']*E_Au + row['N_Pt']*E_Pt + row['N_Pt']*E_Pt), axis=1)  # TODO: get formula
+    # - Surface characteristics concentration
+    for characteristic in ('defects', 'micros', 'facets'):
+        for element in ('Au', 'Pt', 'Pd'):
+            df[f"Surf_{characteristic}_{element}"] = df.apply(lambda row: cntSurfSite(row, element, characteristic), axis=1)
+            for volType in ('bulk_pack', 'sphere'):
+                df[f"Surf_{characteristic}_{element}_{volType}_conc"] = df.apply(lambda row: calcSurfSiteConc(row, element, characteristic, volType), axis=1)
+                df[f"Surf_{characteristic}_{element}_{volType}_ratio"] = df.apply(lambda row: calcSurfSiteRatio(row, element, characteristic, volType), axis=1)
+    # - Energies
+    df['Cohesive_E'] = df.apply(lambda row: row['Total_E'] - (row['N_Au']*E_Au + row['N_Pt']*E_Pt + row['N_Pt']*E_Pt), axis=1)
+    df['Formation_E'] = df.apply(lambda row: row['Total_E'] - (row['N_Au']*E_Au + row['N_Pt']*E_Pt + row['N_Pt']*E_Pt), axis=1)
+    df['Surface_E'] = df.apply(lambda row: row['Total_E'] - (row['N_Au']*E_Au + row['N_Pt']*E_Pt + row['N_Pt']*E_Pt), axis=1)
 
     # Reorder the columns
     if verbose: print('    Reordering columns...')
-    headerList.insert(11, 'Volume')
+    headerList.insert(11, 'Vol_bulk_pack')
+    headerList.insert(11, 'Vol_sphere')
     for i in range(1, 19): headerList.insert(22+i, headerAddList[i])
     for col in featRepeatList: headerList.remove(col)  # Remove the feature names that will be added again
     headerList.extend(headerAddList[-7:])

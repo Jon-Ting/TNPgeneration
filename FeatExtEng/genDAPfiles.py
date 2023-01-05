@@ -10,10 +10,10 @@ from zipfile import ZipFile
 
 
 # Important variables to check!
-PROJECT, USER_GROUP_ID, USER_NAME = 'p00', '564', 'jt5911'
+PROJECT, USER_GROUP_ID, USER_NAME, ELE_COMB = 'p00', '564', 'jt5911', 'AuPtPd'
 sourceDirs = ['CS', 'LL10', 'CL10S', 'CRALS', 'CSL10', 'L10R', 'CSRAL', 'RRAL', 'CRSR']
-sourcePaths = [f"/scratch/{PROJECT}/{USER_NAME}/AuPtPd_MDsim/{dir}" for dir in sourceDirs]
-targetDir = f"/scratch/{PROJECT}/{USER_NAME}/AuPtPd"
+sourcePaths = [f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}_MDsim/{dir}" for dir in sourceDirs]
+targetDir = f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}"
 finalDataPath = f"{targetDir}/finalData"  # Final path to place the results
 
 numFramePerNP = 11
@@ -22,9 +22,9 @@ doneFile = 'DONE.txt'
 outMDfile = 'MDout.csv'
 NCPacExeName, NCPacInpName = 'NCPac.exe', 'NCPac.inp'
 # workingDir = f"/home/659/{USER_NAME}/TNPgeneration/MDsim"
-path2NCPacExe = f"/home/{USER_GROUP_ID}/{USER_NAME}/TNPgeneration/NCPac/{NCPacExeName}"
-path2NCPacInp = f"/home/{USER_GROUP_ID}/{USER_NAME}/TNPgeneration/NCPac/{NCPacInpName}"
-headerLine = f"CSIRO Nanostructure Databank - AuPtPd Nanoparticle Data Set"
+path2NCPacExe = f"/home/{USER_GROUP_ID}/{USER_NAME}/TNPgeneration/FeatExtEng/NCPac/{NCPacExeName}"
+path2NCPacInp = f"/home/{USER_GROUP_ID}/{USER_NAME}/TNPgeneration/FeatExtEng/NCPac/{NCPacInpName}"
+headerLine = f"CSIRO Nanostructure Databank - {ELE_COMB} Nanoparticle Data Set"
 
 def renameXYZs():
     print("Copying xyz files to individual directories and relabelling numerically...")
