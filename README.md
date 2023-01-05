@@ -9,11 +9,10 @@ Date Accomplished: 1/1/23
 
 
 ## Contents of each directory
-- initStruct: LAMMPS, Python, and Bash scripts written for generation of TNP initial structures (.lmp format)
+- InitStruct: LAMMPS, Python, and Bash scripts written for generation of TNP initial structures (.lmp format)
 - EAM: Modified LAMMPS tools for the generation of relevant interatomic potential files required for LAMMPS scripts execution
 - MDsim: LAMMPS, Python, and Bash scripts written for tasks related to molecular dynamics (MD) simulations of the generated TNPs
-- featExt: Python and Bash scripts written for tasks related to feature extraction of TNPs
-- NCPac: Fortran software source code, executable file, and input files for structural/geometrical feature extraction of TNPs
+- FeatExtEng: Python and Bash scripts written for tasks related to feature extraction of TNPs, along with the source code, executable file, and input files of Network Characterisation Package (NCPac), a software developed by Dr George Opletal from CSIRO and extended by Jonathan Ting for structural/geometrical feature extraction of TNPs
 
 
 ## Instructions to use the repository to generate more TNPs structural data
@@ -31,7 +30,7 @@ Date Accomplished: 1/1/23
     - # TODO: Fill in the rest of the types according to the reference
 
 ### Generation of TNP initial structures
-1. Modify the variables in the files below under ./initStruct/ to generate other combinations:
+1. Modify the variables in the files below under ./InitStruct/ to generate other combinations:
     - constants.py
         - {diameterList}: NP diameters (Angstrom)
         - {ratioList}: Percentage of each element (only ratio combinations that add up to 100% will be generated)
@@ -71,9 +70,9 @@ Date Accomplished: 1/1/23
 - * Remember to backup your simulation data to elsewhere when they are done.
 
 ### Feature extraction of TNPs
-1. Go to ./featExt/
+1. Go to ./FeatExtEng/
 2. Modify the paths and parameters in genDAPfiles.py as appropriate.
 3. Submit runGenDAPfiles.sh to the HPC. This will generate:
-    - {AuPtPd_nanoparticle_dataset.csv}, which contains the output of MD simulations of all TNPs.
+    - {MDout.csv}, which contains the output of MD simulations of all TNPs.
     - {features.csv}, which contains the features extracted by NCPac for all TNPs.
 4. Modify the parameters in mergeFeatures.py and run it. This will merge the information from the 2 csv files and generate a new {AuPtPd_nanoparticle_dataset.csv} following the format of dataset stored on CSIRO's Data Access Portal, such as https://data.csiro.au/collection/csiro:40669 (gold nanoparticle).
