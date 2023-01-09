@@ -3,3 +3,4 @@ InitStruct/*NP/
 InitStruct/*log*
 MDsim/*.log
 FeatExtEng/*.log
+FeatExtEng/NCPac/*.mod

@@ -51,7 +51,7 @@ MODULE VARIABLES
 
     real(dp) :: in_cutoff(con_maxtypes,con_maxtypes)                    !cutoff distance for defining 1st nn   
     real(dp) :: in_xl, in_yl, in_zl                                     !cell length in x, y and z direction     
-    integer :: in_frames_start, in_frames_end, in_frames_jump           !starting frame, end frame, no. of frames between analysis
+    integer :: in_frames_start, in_frames_end, in_frames_jump           !starting frame, end frame, number of frames between analysis
     
     real(dp) :: in_density                                              !reduced density
     real(dp) :: in_delr                                                 !spacing of g(r) functions 
@@ -107,8 +107,8 @@ MODULE VARIABLES
     integer, allocatable :: nsurfs(:)                                   !surface particles in the ith frame
     integer, allocatable :: ntypes(:,:)                                 !particles of ith type in jth frame    
     integer :: natoms_max                                               !maximum particles in any frame     
-    integer :: nsurfs_max                                               !maximum no. of surface particles in any frame
-    integer :: ntypes_max(con_maxtypes)                                 !maximum no. of particles in any frame of type i
+    integer :: nsurfs_max                                               !maximum number of surface particles in any frame
+    integer :: ntypes_max(con_maxtypes)                                 !maximum number of particles in any frame of type i
     
     integer, allocatable :: flag_surf(:)                                !flag if particle i is a surface particle   
     
@@ -268,10 +268,10 @@ subroutine INITIAL
     !Write out version
     if(in_write_screen==1) print*,'NCPac - Version: ',con_vers     
     
-    !Determine no. of frames in movie     
+    !Determine number of frames in movie     
     call INITIAL_FRAMES        
     
-    !Determine no. of particles types in movie      
+    !Determine number of particles types in movie      
     call INITIAL_TYPES  
     
     !Define bond length cutoffs
@@ -280,13 +280,13 @@ subroutine INITIAL
     !Depad xyz movie if padded
     call INITIAL_DEPAD      
     
-    !Determine no. of total and surface particles in movie
+    !Determine number of total and surface particles in movie
     call INITIAL_PARTICLES  
     
     !Determine cell lengths
     call INITIAL_CELL    
     
-    !Read in no. of frames in analysis 
+    !Read in number of frames in analysis 
     read(10,*) in_frames_start, in_frames_end, in_frames_jump          
     if(in_frames_end>framecnt) then
         print*,'ERROR - No of frames in analysis > frames in XYZ file'
@@ -379,7 +379,7 @@ end
 
 !=======================================================================
 !START OF INITIAL_FRAMES ROUTINE
-!Determines the number of frames in the movie (framecnt) 
+!Determine number of frames in the movie (framecnt) 
 
 subroutine INITIAL_FRAMES
     
@@ -389,7 +389,7 @@ subroutine INITIAL_FRAMES
     character (len=500) :: str1,str2
     integer :: i, j, k
     
-    !Determines frames in movie
+    !Determine frames in movie
     open(1, file = in_filexyz, status = 'old')      
     framecnt = 0
     
@@ -427,7 +427,7 @@ end
 
 !=======================================================================
 !START OF INITIAL_TYPES ROUTINE
-!Determines the number of particle types (typecnt) in movie and 
+!Determine number of particle types (typecnt) in movie and 
 !stores their types in typelist(i) 
 
 subroutine INITIAL_TYPES
@@ -1045,16 +1045,15 @@ subroutine SINGLE_NNLIST
     !Local     
     integer :: i, j, k, l, it1, it2
     real(dp) :: dx, dy, dz ,dr2
-    real(dp) :: ncordSum, ncordMax
-    real(dp), allocatable :: ncordSumA(:,:), ncordMaxA(:,:)
+    integer :: ncordSum, ncordMax
+    integer, allocatable :: ncordSumA(:,:)
     
     ALLOCATE(ncordSumA(10,10))
-    ALLOCATE(ncordMaxA(10,10))
 
     ncord = 0
     ncordA = 0
     
-    !build neighbor list
+    !Build neighbor list
     do i=1, natoms(frame)
         do j=(i+1), natoms(frame)
             dx = xc(i) - xc(j)
@@ -1101,36 +1100,32 @@ subroutine SINGLE_NNLIST
         end do
     end do
 
-    ! Compute generalised coordination number (taking second neighbours into account)
+    !Compute generalised coordination number (taking second neighbours into account)
     gcn = 0.0_dp
     gcnA = 0.0_dp
+    ncordMax = 12  !Currently fixed for FCC packing
     do i=1, natoms(frame)
-        ncordSum = 0.0_dp
-        ncordMax = 0.0_dp  !Maximum cn in the bulk
-        ncordSumA = 0.0_dp
-        ncordMaxA = 0.0_dp
+        ncordSum = 0
+        ncordSumA = 0
         do j=1, ncord(i)
             it1 = nnlist(i,j)
             ncordSum = ncordSum + ncord(it1)
-            if(ncord(it1)>ncordMax) ncordMax = ncord(it1)
             do k=1, typecnt
                 do l=1, typecnt
                     ncordSumA(k,l) = nCordSumA(k,l) + ncordA(it1,k,l)
-                    if(ncordA(it1,k,l)>ncordMaxA(k,l)) ncordMaxA(k,l) = ncordA(it1,k,l)
                 end do  
             end do  
         end do  
 
-        gcn(i) = ncordSum / ncordMax
+        gcn(i) = real(ncordSum, dp) / ncordMax
         do k=1, typecnt
             do l=1, typecnt
-                gcnA(i,k,l) = ncordSumA(k,l) / ncordMaxA(k,l)
+                gcnA(i,k,l) = real(ncordSumA(k,l), dp) / ncordMax
             end do
         end do
     end do
 
     DEALLOCATE(ncordSumA)
-    DEALLOCATE(ncordMaxA)
     
     return
 end 
@@ -1209,7 +1204,7 @@ subroutine SINGLE_FILE_CLOSE
     close(34)
     close(35)
     
-    !1st nn environments population      
+    !1st NN environments population      
     if(in_SU_flag==1) then
         close(40)
         close(41)
@@ -1553,9 +1548,7 @@ subroutine CAL_CLUSTER
     !Maximum cluster size
     cluster_maxsize = 0
     do i=1, natoms(frame)
-        if(cluster_his(i)>0) then
-            cluster_maxsize = i
-        end if
+        if(cluster_his(i)>0) cluster_maxsize = i
     end do
     
     !Filtering choices
@@ -1578,9 +1571,7 @@ subroutine CAL_CLUSTER
     cluster_atoms = 0
     do i=1, natoms(frame)
         do j=1, cnt  
-            if(cluster_id(i)==cluster_list(j)) then
-                cluster_atoms(i) = 1  
-            end if
+            if(cluster_id(i)==cluster_list(j)) cluster_atoms(i) = 1  
         end do
     end do  
     
@@ -1593,7 +1584,7 @@ subroutine CAL_CLUSTER
     !Write out file titles in first analysis frame  
     if(headers_done==0) then
         write(45,400)    
-        400   format('CLUSTER SIZE DISTRIBUTION (frame, no. of clusters)')
+        400   format('CLUSTER SIZE DISTRIBUTION (frame, number of clusters)')
         write(45,500)
         500   format('      Frame',$)
         
@@ -1689,7 +1680,7 @@ subroutine FEATUREFILE
     IMPLICIT NONE 
     
     !Local      
-    integer :: i, j, k, l
+    integer :: i, j, k, l, m
     real(dp) delq
     
     !Write out header line
@@ -1702,8 +1693,7 @@ subroutine FEATUREFILE
         'PARTICLES'                                     ,3(','),$)      !N_total,N_bulk, N_surf 
 
         do i=1, typecnt
-            write(90,401)
-            401   format(',',$)  !N_element 
+            write(90,'(a,$)') ','  !N_element
         end do
         
         if(in_surf_flag==1) then
@@ -1739,18 +1729,15 @@ subroutine FEATUREFILE
         'BOND TYPE FRACTIONS'                           ,$)
         do i=1, typecnt
             do j=i, typecnt
-            write(90,418)
-            418 format(',',$)
+                write(90,'(a,$)') ','
             end do
         end do
-        write(90,420)                                                   !N bonds column at the end of bond type histogram                           
-        420 format(',',$)
+        write(90,'(a,$)') ','                                           !N bonds column at the end of bond type histogram                           
         
         write(90,430)                                                   !G2
         430 format('RADIAL DISTRIBUTION FUNCTION G2(r) - Total',$)
         do i=1, in_gr_points+2                                          !+2 for the types columns
-            write(90,432)
-            432 format(',',$)
+            write(90,'(a,$)') ','
         end do
         
         if(typecnt>1) then
@@ -1759,8 +1746,7 @@ subroutine FEATUREFILE
                     write(90,434)
                     434 format('RADIAL DISTRIBUTION FUNCTION G2(r) - Partial',$) 
                     do k=1, in_gr_points+2                                  !+2 for the types column
-                        write(90,436)
-                        436 format(',',$)
+                        write(90,'(a,$)') ','
                     end do
                 end do
             end do
@@ -1769,26 +1755,22 @@ subroutine FEATUREFILE
         write(90,440)                                                   !Total structure factor
         440 format('STRUCTURE FACTOR S(q) - Total', $) 
         do i=1, in_sq_points
-            write(90,442) 
-            442 format(',',$)
+            write(90,'(a,$)') ','
         end do 
         
         write(90,450)
         450 format('PARTICLE ANGULAR DISTRIBUTION G3(theta) - Total', $) 
-        do i=1, 3+3+180                                                 !3 types, 3 stats, 180 degrees columns
-            write(90,451) 
-            451 format(',',$)
+        do i=1, 3+5+180                                                 !3 types, 5 stats, 180 degrees columns
+            write(90,'(a,$)') ','
         end do 
-
         if(typecnt>1) then
             do i=1, typecnt
                 do j=1, typecnt
                     do k=1, typecnt
                         write(90,452)
                         452 format('PARTICLE ANGULAR DISTRIBUTION G3(theta) - Partial',$) 
-                        do l=1, 3+3+180 
-                            write(90,453)
-                            453 format(',',$)
+                        do l=1, 3+5+180 
+                            write(90,'(a,$)') ','
                         end do
                     end do
                 end do
@@ -1797,20 +1779,17 @@ subroutine FEATUREFILE
 
         write(90,460)
         460 format('SECOND ORDER PARTICLE ANGULAR DISTRIBUTION G3_2(theta) - Total', $) 
-        do i=1, 3+3+180                                                 !3 types, 3 stats, 180 degrees columns
-            write(90,461) 
-            461 format(',',$)
+        do i=1, 3+5+180                                                 !3 types, 5 stats, 180 degrees columns
+            write(90,'(a,$)') ','
         end do 
-
         if(typecnt>1) then
             do i=1, typecnt
                 do j=1, typecnt
                     do k=1, typecnt
                         write(90,462)
                         462 format('SECOND ORDER PARTICLE ANGULAR DISTRIBUTION G3_2(theta) - Partial',$) 
-                        do l=1, 3+3+180                                 !3 types, 3 stats, 180 degrees columns
-                            write(90,463)
-                            463 format(',',$)
+                        do l=1, 3+5+180
+                            write(90,'(a,$)') ','
                         end do
                     end do
                 end do
@@ -1819,10 +1798,24 @@ subroutine FEATUREFILE
 
         write(90,470)
         470 format('PARTICLE TORSION ANGULAR DISTRIBUTION G4(theta) - Total', $) 
-        do i=1, 362+4                                                   !2*(0 to 180), +4 for Mean/Std for Pos/Neg angles
-            write(90,472) 
-            472 format(',',$)
+        do i=1, 4+362+10                                               !4 types, 2*(0 to 180 degs, Mean/Std/Max/Min/N) for Pos/Neg angles
+            write(90,'(a,$)') ',' 
         end do 
+        if(typecnt>1) then
+            do i=1, typecnt
+                do j=1, typecnt
+                    do k=1, typecnt
+                        do l=1, typecnt
+                            write(90,471)
+                            471 format('PARTICLE TORSION ANGULAR DISTRIBUTION G4(theta) - Partial',$) 
+                            do m=1, 4+10
+                                write(90,'(a,$)') ','
+                            end do
+                        end do
+                    end do
+                end do
+            end do
+        end if
         
         if(in_chain_flag==1) then
             write(90,475)
@@ -1840,8 +1833,7 @@ subroutine FEATUREFILE
             490 format('SIGNATURE CELLS '             ,4(','),$)
         end if
 
-        write(90,499)
-        499 format('HERE!',$)
+        write(90,'(a,$)') 'HERE!'
         
         write(90,*)                                                     !new line
         
@@ -1851,8 +1843,7 @@ subroutine FEATUREFILE
         500 format('      Frame',',    N Total',$)
 
         do i=1, typecnt
-            write(90,501) i
-            501 format(', N Element',i2,$)
+            write(90,'(a,i2,$)') ', N Element',i
         end do
         
         !Surface layer analysis 
@@ -1868,8 +1859,7 @@ subroutine FEATUREFILE
             
             !Surface curvature histogram        
             do i=1, 180
-                write(90,520) i
-                520       format(',',i11,$)
+                write(90,'(a,i11,$)') ',',i
             end do
             
         end if 
@@ -1928,13 +1918,10 @@ subroutine FEATUREFILE
         
         !Bond lengths 
         write(90,545)                                                   !Total particles                                
-        545 format(',       Type',',       Type',', Avg Length',            &
-                   ',    Std Dev',', Max Length',', Min Length',',  N Lengths',$) 
-        do i=1, typecnt                                               !Partial particles
+        545 format(',       Type',',       Type',', Avg Length',',    Std Dev',', Max Length',', Min Length',',  N Lengths',$) 
+        do i=1, typecnt                                                 !Partial particles
             do j=i, typecnt
-                write(90,550) 
-                550     format(',       Type',',       Type',', Avg Length',            &
-                               ',    Std Dev',', Max Length',', Min Length',',  N Lengths',$)  
+                write(90,545) 
             end do
         end do  
         
@@ -1945,15 +1932,13 @@ subroutine FEATUREFILE
                 560       format(',','      ',i2,' ',i2,$)          
             end do
         end do  
-        write(90,570) 
-        570   format(',    N Bonds',$)    
+        write(90,'(a,$)') ',    N Bonds'
         
         !g(r) total  
         write(90,580)
         580   format(',       Type',',       Type',$)      
         do i=1, in_gr_points
-            write(90,590) (i-1)*in_delr
-            590     format(',',f11.4,$)
+            write(90,'(a,f11.4,$)') ',',(i-1)*in_delr
         end do  
         
         !g(r) partial
@@ -1963,8 +1948,7 @@ subroutine FEATUREFILE
                     write(90,600)
                     600         format(',       Type',',       Type',$)            
                     do k=1, in_gr_points
-                        write(90,610) (k-1)*in_delr
-                        610           format(',',f11.4,$)            
+                        write(90,'(a,f11.4,$)') ',',(k-1)*in_delr
                     end do
                 end do
             end do   
@@ -1974,17 +1958,15 @@ subroutine FEATUREFILE
         !delq determination from delr
         delq = 2*con_pi / (in_delr*(2*in_sq_points-2)) 
         do i=1, in_sq_points
-            write(90,620) (i-1)*delq
-            620     format(',',f11.4,$)
+            write(90,'(a,f11.4,$)') ',',(i-1)*delq
         end do
         
         !G3 total
         write(90,625) 
-        625         format(',       Type',',       Type',',       Type',',      Angles',',        Avg',',    Std Dev',$)
-        
+        625         format(',       Type',',       Type',',       Type',',        Avg',',    Std Dev',&
+        ',        Max',',        Min',',    N Angles',$)
         do i=1, 180
-            write(90,630) i
-            630     format(',',i11,$)
+            write(90,'(a,i11,$)') ',',i
         end do       
         
         !G3 partial
@@ -1992,12 +1974,9 @@ subroutine FEATUREFILE
             do i=1, typecnt
                 do j=1, typecnt   
                     do k=1, typecnt   
-                        write(90,631)
-                        631         format(',       Type',',       Type',',       Type',&
-                        ',      Angles',',        Avg',',    Std Dev',$)
+                        write(90,625)
                         do l=1, 180
-                            write(90,632) l
-                            632           format(',',i11,$)            
+                            write(90,'(a,i11,$)') ',',l
                         end do
                     end do
                 end do
@@ -2005,12 +1984,9 @@ subroutine FEATUREFILE
         end if
 
         !G3_2 total
-        write(90,635) 
-        635         format(',       Type',',       Type',',       Type',',      Angles',',        Avg',',    Std Dev',$)
-        
+        write(90,625) 
         do i=1, 180
-            write(90,640) i
-            640     format(',',i11,$)
+            write(90,'(a,i11,$)') ',',i
         end do       
         
         !G3_2 partial
@@ -2018,12 +1994,9 @@ subroutine FEATUREFILE
             do i=1, typecnt
                 do j=1, typecnt   
                     do k=1, typecnt   
-                        write(90,641)
-                        641         format(',       Type',',       Type',',       Type',&
-                        ',      Angles',',        Avg',',    Std Dev',$)
+                        write(90,625)
                         do l=1, 180
-                            write(90,642) l
-                            642           format(',',i11,$)  
+                            write(90,'(a,i11,$)') ',',l
                         end do
                     end do
                 end do
@@ -2032,26 +2005,43 @@ subroutine FEATUREFILE
         
         !Bond torsion total
         write(90,655) 
-        655     format(',    Neg Avg',',Neg Std Dev',',    Pos Avg',',Pos Std Dev',$)
-        
-        do i=-180, 0
-            write(90,660) i
-            660     format(',',i11,$)
+        655     format(',       Type',',       Type',',       Type',',       Type',',    Neg Avg',',Neg Std Dev',',    Neg Max',&
+        ',    Neg Min',',  N NAngles',',    Pos Avg',',Pos Std Dev',',    Pos Max',',    Pos Min',',  N PAngles',$)
+        do i=0, -180, -1
+            write(90,'(a,i11,$)') ',',i
         end do       
-        
-        do i=0, 180
-            write(90,670) i
-            670     format(',',i11,$)
+        do i=0, 180, 1
+            write(90,'(a,i11,$)') ',',i
         end do       
+
+        !Bond torsion partial
+        if(typecnt>1) then
+            do i=1, typecnt
+                do j=1, typecnt   
+                    do k=1, typecnt   
+                        do l=1, typecnt   
+                            write(90,655)
+                            !Omitted to make od_FEATURESET.csv smaller in size
+                            !do m=0, -180, -1
+                            !    write(90,'(a,i11,$)') ',',m
+                            !end do
+                            !do m=0, 180, 1
+                            !    write(90,'(a,i11,$)') ',',m
+                            !end do
+                        end do
+                    end do
+                end do
+            end do   
+        end if
 
         !Chain length histogram
         if(in_chain_flag==1) then
             do i=1, 20
-                write(90,530) i
-                530     format(',',i11,$)     
+                write(90,'(a,i11,$)') ',',i
             end do        
         end if
         
+        !Q6Q6 analysis
         if(in_q6order_flag==1) then
             write(90,680)
             680     format(                                                             &
@@ -2076,8 +2066,7 @@ subroutine FEATUREFILE
         !SC  FIX: need to generalize this for search mode
         if(in_sc_flag==1) then
             do i=1, in_sc_cells
-                write(90,690) in_sc_labs(i)
-                690       format(',',i11,$)                
+                write(90,'(a,i11,$)') ',',in_sc_labs(i)
             end do
         end if
         
@@ -2086,12 +2075,10 @@ subroutine FEATUREFILE
     end if
         
     !Write out frames and total atoms (after filtering)
-    write(90,700) frame, natoms(frame) 
-    700   format(i11,',',i11,$)
+    write(90,'(i11,a,i11,$)') frame,',',natoms(frame)
 
     do i=1, typecnt
-        write(90,701) nlabs(i) 
-        701   format(',',i11,$)
+        write(90,'(a,i11,$)') ',',nlabs(i)
     end do
     
     return
@@ -2426,7 +2413,7 @@ subroutine CAL_SURF_COORD
         end do
     end do
     
-    ! Compute generalised coordination number (take second neighbours into accnt)
+    ! Compute generalised coordination number (take second neighbours into account)
     gcnS = 0.0_dp
     gcnSA = 0.0_dp
     do i=1, natoms(frame)
@@ -3046,7 +3033,7 @@ subroutine CAL_SURF_CURVE
     !Write out surface curvature   
     if(headers_done==0) then
         write(32,200)  
-        200   format('SURFACE LAYER - Curvature histogram (degrees v no. of particles)')
+        200   format('SURFACE LAYER - Curvature histogram (degrees v number of particles)')
         write(32,210)
         210   format('      Frame',$)
         
@@ -3335,8 +3322,7 @@ subroutine CAL_CHAIN
     
     !Write out to feature file
     do i=1, 20
-        write(90,160) seg_histogram(i)
-        160   format(',',i11,$)       
+        write(90,'(a,i11,$)') ',',seg_histogram(i)
     end do             
     
     !Output XYZ file
@@ -3588,7 +3574,6 @@ subroutine CAL_COORD_HISTO
     end do
     
     !Write out coordination statistics
-    
     if(headers_done==0) then
         write(20,110)
         110 format('COORDINATION STATS (T=total B=bulk S=surface So=surface only G=generalised coordination number)')  
@@ -4717,15 +4702,19 @@ subroutine CAL_G3
     real(dp), allocatable :: g3_part(:,:,:,:)
     real(dp), allocatable :: g3_part_mean(:,:,:)    
     real(dp), allocatable :: g3_part_stdev(:,:,:)    
+    integer, allocatable :: g3_part_max(:,:,:)    
+    integer, allocatable :: g3_part_min(:,:,:)    
     real(dp) :: g3_total(180)
     real(dp) :: g3_total_mean    
     real(dp) :: g3_total_stdev   
+    integer :: g3_total_max 
+    integer :: g3_total_min
     real(dp) :: g3_tpavg(natoms_max)
-    real(dp) :: g3_tpmax(natoms_max)
-    real(dp) :: g3_tpmin(natoms_max)
+    integer :: g3_tpmax(natoms_max)
+    integer :: g3_tpmin(natoms_max)
     real(dp) :: g3_ppavg(natoms_max,typecnt,typecnt,typecnt)
-    real(dp) :: g3_ppmax(natoms_max,typecnt,typecnt,typecnt)
-    real(dp) :: g3_ppmin(natoms_max,typecnt,typecnt,typecnt)
+    integer :: g3_ppmax(natoms_max,typecnt,typecnt,typecnt)
+    integer :: g3_ppmin(natoms_max,typecnt,typecnt,typecnt)
     integer :: g3_prec
     character(len=50) :: g3_prec_str
     character(len=200) :: writeg3
@@ -4733,24 +4722,30 @@ subroutine CAL_G3
     ALLOCATE(g3_part(typecnt,typecnt,typecnt,180))
     ALLOCATE(g3_part_mean(typecnt,typecnt,typecnt))
     ALLOCATE(g3_part_stdev(typecnt,typecnt,typecnt))
+    ALLOCATE(g3_part_max(typecnt,typecnt,typecnt))
+    ALLOCATE(g3_part_min(typecnt,typecnt,typecnt))
 
     g3_part = 0.0_dp
     g3_part_mean = 0.0_dp
     g3_part_stdev = 0.0_dp
+    g3_part_max = 0
+    g3_part_min = 180
     g3_total = 0.0_dp
     g3_total_mean = 0.0_dp
     g3_total_stdev = 0.0_dp
+    g3_total_max = 0
+    g3_total_min = 180
 
     !Binsize 
     binsize = 1.0_dp  
     
     !Calculate bond angles    
     g3_tpavg = 0.0_dp
-    g3_tpmax = 0.0_dp
-    g3_tpmin = 180.0_dp
+    g3_tpmax = 0
+    g3_tpmin = 180
     g3_ppavg = 0.0_dp
-    g3_ppmax = 0.0_dp
-    g3_ppmin = 180.0_dp
+    g3_ppmax = 0
+    g3_ppmin = 180
     tol = 0.00001_dp
     cnt1 = 0
     cnt2 = 0
@@ -4808,10 +4803,15 @@ subroutine CAL_G3
                 cnt3(i,typeA,typeB,typeC) = cnt3(i,typeA,typeB,typeC) + 1
                 g3_tpavg(i) = g3_tpavg(i) + phis
                 g3_ppavg(i,typeA,typeB,typeC) = g3_ppavg(i,typeA,typeB,typeC) + phis
+
                 if (phis>g3_tpmax(i)) g3_tpmax(i) = phis
                 if (phis>g3_ppmax(i,typeA,typeB,typeC)) g3_ppmax(i,typeA,typeB,typeC) = phis
+                if (phis>g3_part_max(typeA,typeB,typeC)) g3_part_max(typeA,typeB,typeC) = phis
+                if (phis>g3_total_max) g3_total_max = phis
                 if (phis<g3_tpmin(i)) g3_tpmin(i) = phis
                 if (phis<g3_ppmin(i,typeA,typeB,typeC)) g3_ppmin(i,typeA,typeB,typeC) = phis
+                if (phis<g3_part_min(typeA,typeB,typeC)) g3_part_min(typeA,typeB,typeC) = phis
+                if (phis<g3_total_min) g3_total_min = phis
 
             end do
         end do
@@ -4821,7 +4821,7 @@ subroutine CAL_G3
     
     g3_prec = 1
     write(g3_prec_str,*) g3_prec 
-    writeg3 = '(3(F10.'//g3_prec_str//',2X),i6)'
+    writeg3 = '(F10.'//g3_prec_str//',2X,3(i10))'
     write(56,'(i10,/)') natoms(frame)
     do i=1, natoms(frame)
         write(56,'(a,2x,3(F10.'//xyz_prec_str//',2X))',advance='no') lc(i),xc(i),yc(i),zc(i)
@@ -4927,8 +4927,8 @@ subroutine CAL_G3
         
         !Write label before angle values
         write(52,15) 
-        15  format('      Frame',',      Type1',',      Type2',',      Type3', &
-                   ',     Angles',',        Avg',',    Std Dev',$)
+        15  format('      Frame',',      Type1',',      Type2',',      Type3',',        Avg',&
+        ',    Std Dev',',        Max',',        Min',',   N Angles',$)
         
         !Write out angle values  
         do i=1, 180
@@ -4940,10 +4940,10 @@ subroutine CAL_G3
     end if
     
     !Write total angle label
-    write(52,25) frame,cnt1,g3_total_mean,g3_total_stdev
-    25  format(i11,',      Total',',      Total',',      Total',',',i11,',',f11.1,',',f11.1,$)      
-    write(90,26) cnt1,g3_total_mean,g3_total_stdev
-    26  format(',      Total',',      Total',',      Total',',',i11,',',f11.1,',',f11.1,$) 
+    write(52,25) frame,g3_total_mean,g3_total_stdev,g3_total_max,g3_total_min,cnt1 
+    25  format(i11,',      Total',',      Total',',      Total',',',f11.1,',',f11.1,3(',',i11),$)
+    write(90,26) g3_total_mean,g3_total_stdev,g3_total_max,g3_total_min,cnt1 
+    26  format(',      Total',',      Total',',      Total',',',f11.1,',',f11.1,3(',',i11),$) 
     
     !Write total g3 out   
     do i=1, 180
@@ -4951,14 +4951,6 @@ subroutine CAL_G3
         write(90,30) g3_total(i)
         30  format(',',f11.6,$)
     end do
-    
-    !Write out to featureset file (alternative code block)
-    !write(90,31) g3_total_mean,g3_total_stdev
-    !31  format(',',f11.1,',',f11.1,$)
-    !do i=1, 180
-    !    write(90,32) g3_total(i)
-    !    32  format(',',f11.1,$)      
-    !end do         
     
     write(52,*) !New line
     
@@ -4968,10 +4960,12 @@ subroutine CAL_G3
             do j=1, typecnt
                 do k=1, typecnt
                     !Write partial g3 labels 
-                    write(52,35) frame,i,j,k,cnt2(i,j,k),g3_part_mean(i,j,k), g3_part_stdev(i,j,k)        
-                    35  format(i11,(',',9x,i2),(',',9x,i2),(',',9x,i2),',',i11,',',f11.6,',',f11.6,$)     
-                    write(90,36) i,j,k,cnt2(i,j,k),g3_part_mean(i,j,k), g3_part_stdev(i,j,k)        
-                    36  format((',',9x,i2),(',',9x,i2),(',',9x,i2),',',i11,',',f11.6,',',f11.6,$)     
+                    write(52,35) frame,i,j,k,g3_part_mean(i,j,k),g3_part_stdev(i,j,k),&
+                    g3_part_max(i,j,k),g3_part_min(i,j,k),cnt2(i,j,k) 
+                    35  format(i11,3(',',9x,i2),',',f11.6,',',f11.6,3(',',i11),$)
+                    write(90,36) i,j,k,g3_part_mean(i,j,k),g3_part_stdev(i,j,k),&
+                    g3_part_max(i,j,k),g3_part_min(i,j,k),cnt2(i,j,k) 
+                    36  format(3(',',9x,i2),',',f11.6,',',f11.6,3(',',i11),$)
                     
                     do l=1, 180
                         write(52,40) g3_part(i,j,k,l)
@@ -4987,6 +4981,8 @@ subroutine CAL_G3
     DEALLOCATE(g3_part)
     DEALLOCATE(g3_part_mean)
     DEALLOCATE(g3_part_stdev)
+    DEALLOCATE(g3_part_max)
+    DEALLOCATE(g3_part_min)
 
     return
 end 
@@ -5024,15 +5020,19 @@ subroutine CAL_G3_2
     real(dp), allocatable :: g3_2_part(:,:,:,:)
     real(dp), allocatable :: g3_2_part_mean(:,:,:)    
     real(dp), allocatable :: g3_2_part_stdev(:,:,:)    
+    integer, allocatable :: g3_2_part_max(:,:,:)
+    integer, allocatable :: g3_2_part_min(:,:,:)
     real(dp) :: g3_2_total(180)
     real(dp) :: g3_2_total_mean    
     real(dp) :: g3_2_total_stdev   
+    integer :: g3_2_total_max    
+    integer :: g3_2_total_min
     real(dp) :: g3_2_tpavg(natoms_max)
-    real(dp) :: g3_2_tpmax(natoms_max)
-    real(dp) :: g3_2_tpmin(natoms_max)
+    integer :: g3_2_tpmax(natoms_max)
+    integer :: g3_2_tpmin(natoms_max)
     real(dp) :: g3_2_ppavg(natoms_max,typecnt,typecnt,typecnt)
-    real(dp) :: g3_2_ppmax(natoms_max,typecnt,typecnt,typecnt)
-    real(dp) :: g3_2_ppmin(natoms_max,typecnt,typecnt,typecnt)
+    integer :: g3_2_ppmax(natoms_max,typecnt,typecnt,typecnt)
+    integer :: g3_2_ppmin(natoms_max,typecnt,typecnt,typecnt)
     integer :: g3_2_prec
     character(len=50) :: g3_2_prec_str
     character(len=200) :: writeg3_2
@@ -5040,24 +5040,30 @@ subroutine CAL_G3_2
     ALLOCATE(g3_2_part(typecnt,typecnt,typecnt,180))
     ALLOCATE(g3_2_part_mean(typecnt,typecnt,typecnt))
     ALLOCATE(g3_2_part_stdev(typecnt,typecnt,typecnt))
+    ALLOCATE(g3_2_part_max(typecnt,typecnt,typecnt))
+    ALLOCATE(g3_2_part_min(typecnt,typecnt,typecnt))
 
     g3_2_part = 0.0_dp
     g3_2_part_mean = 0.0_dp
     g3_2_part_stdev = 0.0_dp
+    g3_2_part_max = 0
+    g3_2_part_min = 180
     g3_2_total = 0.0_dp
     g3_2_total_mean = 0.0_dp
     g3_2_total_stdev = 0.0_dp
+    g3_2_total_max = 0
+    g3_2_total_min = 180
     
     !Binsize 
     binsize = 1.0_dp  
     
     !Calculate bond angles    
     g3_2_tpavg = 0.0_dp
-    g3_2_tpmax = 0.0_dp
-    g3_2_tpmin = 180.0_dp
+    g3_2_tpmax = 0
+    g3_2_tpmin = 180
     g3_2_ppavg = 0.0_dp
-    g3_2_ppmax = 0.0_dp
-    g3_2_ppmin = 180.0_dp
+    g3_2_ppmax = 0
+    g3_2_ppmin = 180
     tol = 0.00001_dp
     cnt1 = 0
     cnt2 = 0
@@ -5118,10 +5124,15 @@ subroutine CAL_G3_2
                 cnt3(i,typeA,typeB,typeC) = cnt3(i,typeA,typeB,typeC) + 1
                 g3_2_tpavg(i) = g3_2_tpavg(i) + phis
                 g3_2_ppavg(i,typeA,typeB,typeC) = g3_2_ppavg(i,typeA,typeB,typeC) + phis
+
                 if (phis>g3_2_tpmax(i)) g3_2_tpmax(i) = phis
                 if (phis>g3_2_ppmax(i,typeA,typeB,typeC)) g3_2_ppmax(i,typeA,typeB,typeC) = phis
+                if (phis>g3_2_part_max(typeA,typeB,typeC)) g3_2_part_max(typeA,typeB,typeC) = phis
+                if (phis>g3_2_total_max) g3_2_total_max = phis
                 if (phis<g3_2_tpmin(i)) g3_2_tpmin(i) = phis
                 if (phis<g3_2_ppmin(i,typeA,typeB,typeC)) g3_2_ppmin(i,typeA,typeB,typeC) = phis
+                if (phis<g3_2_part_min(typeA,typeB,typeC)) g3_2_part_min(typeA,typeB,typeC) = phis
+                if (phis<g3_2_total_min) g3_2_total_min = phis
             end do
         end do
 
@@ -5132,7 +5143,7 @@ subroutine CAL_G3_2
     !Write out xyz file
     g3_2_prec = 1
     write(g3_2_prec_str,*) g3_2_prec 
-    writeg3_2 = '(3(F10.'//g3_2_prec_str//',2X),i6)'
+    writeg3_2 = '(F10.'//g3_2_prec_str//',2X,3(i10))'
     write(57,'(i10,/)') natoms(frame) 
     do i=1, natoms(frame)
         write(57,'(a,2x,3(F10.'//xyz_prec_str//',2X))',advance='no') lc(i),xc(i),yc(i),zc(i)
@@ -5236,8 +5247,8 @@ subroutine CAL_G3_2
         
         !Write label before angle values
         write(53,15) 
-        15  format('      Frame',',      Type1',',      Type2',',      Type3', &
-                   ',     Angles',',        Avg',',    Std Dev',$)
+        15  format('      Frame',',      Type1',',      Type2',',      Type3',',        Avg',&
+        ',    Std Dev',',        Max',',        Min',',   N Angles',$)
         
         !Write out angle values  
         do i=1, 180
@@ -5249,10 +5260,10 @@ subroutine CAL_G3_2
     end if
     
     !Write total angle label
-    write(53,25) frame,cnt1,g3_2_total_mean,g3_2_total_stdev
-    25  format(i11,',      Total',',      Total',',      Total',',',i11,',',f11.1,',',f11.1,$)      
-    write(90,26) cnt1,g3_2_total_mean,g3_2_total_stdev
-    26  format(',      Total',',      Total',',      Total',',',i11,',',f11.1,',',f11.1,$)      
+    write(53,25) frame,g3_2_total_mean,g3_2_total_stdev,g3_2_total_max,g3_2_total_min,cnt1
+    25  format(i11,',      Total',',      Total',',      Total',',',f11.1,',',f11.1,3(',',i11),$)
+    write(90,26) g3_2_total_mean,g3_2_total_stdev,g3_2_total_max,g3_2_total_min,cnt1
+    26  format(',      Total',',      Total',',      Total',',',f11.1,',',f11.1,3(',',i11),$)
     
     !Write total g3_2 out   
     do i=1, 180
@@ -5260,14 +5271,6 @@ subroutine CAL_G3_2
         write(90,30) g3_2_total(i)
         30  format(',',f11.6,$)      
     end do
-    
-    !Write out to featureset file
-    !write(90,31) g3_2_total_mean,g3_2_total_stdev
-    !31  format(',',f11.1,',',f11.1,$)
-    !do i=1, 180
-    !    write(90,32) g3_2_total(i)
-    !    32  format(',',f11.1,$)      
-    !end do         
     
     write(53,*) !New line
     
@@ -5277,10 +5280,12 @@ subroutine CAL_G3_2
             do j=1, typecnt
                 do k=1, typecnt
                     !Write partial g3_2 labels 
-                    write(53,35) frame,i,j,k,cnt2(i,j,k),g3_2_part_mean(i,j,k), g3_2_part_stdev(i,j,k)        
-                    35  format(i11,(',',9x,i2),(',',9x,i2),(',',9x,i2),',',i11,',',f11.6,',',f11.6,$)     
-                    write(90,36) i,j,k,cnt2(i,j,k),g3_2_part_mean(i,j,k), g3_2_part_stdev(i,j,k)        
-                    36  format((',',9x,i2),(',',9x,i2),(',',9x,i2),',',i11,',',f11.6,',',f11.6,$)     
+                    write(53,35) frame,i,j,k,g3_2_part_mean(i,j,k),g3_2_part_stdev(i,j,k),g3_2_part_max(i,j,k),&
+                    g3_2_part_min(i,j,k),cnt2(i,j,k) 
+                    35  format(i11,3(',',9x,i2),',',f11.6,',',f11.6,3(',',i11),$)
+                    write(90,36) i,j,k,g3_2_part_mean(i,j,k),g3_2_part_stdev(i,j,k),g3_2_part_max(i,j,k),&
+                    g3_2_part_min(i,j,k),cnt2(i,j,k) 
+                    36  format(3(',',9x,i2),',',f11.6,',',f11.6,3(',',i11),$)
                     
                     do l=1, 180
                         write(53,40) g3_2_part(i,j,k,l)
@@ -5296,6 +5301,8 @@ subroutine CAL_G3_2
     DEALLOCATE(g3_2_part)
     DEALLOCATE(g3_2_part_mean)
     DEALLOCATE(g3_2_part_stdev)
+    DEALLOCATE(g3_2_part_max)
+    DEALLOCATE(g3_2_part_min)
 
     return
 end 
@@ -5320,14 +5327,14 @@ subroutine CAL_BTORSION
     !Local 
     integer :: i, j, k, l, m
     integer :: it1, it2, it3
-    integer :: btors_neg_cnt(natoms_max)                                !number of torsion angles for each atom
+    integer :: btors_neg_cnt(natoms_max)                      !number of torsion angles for each atom
     integer :: btors_pos_cnt(natoms_max)                               
-    integer :: cnt1neg                                                !total number of angles
+    integer :: cnt1neg                                        !total number of angles
     integer :: cnt2neg(typecnt,typecnt,typecnt,typecnt)       !number of angles between A-B-C-D
     integer :: cnt1pos                                               
     integer :: cnt2pos(typecnt,typecnt,typecnt,typecnt)      
     integer :: typeA, typeB, typeC, typeD
-    integer :: phis                                                     !integer cast bond angle
+    integer :: phis                                           !integer cast bond angle
     real(dp) :: binsize
     real(dp) :: tol,tolvec 
     real(dp) :: xu1, yu1, zu1
@@ -5342,21 +5349,29 @@ subroutine CAL_BTORSION
     real(dp), allocatable :: btors_neg_part(:,:,:,:,:)
     real(dp), allocatable :: btors_neg_part_mean(:,:,:,:)
     real(dp), allocatable :: btors_neg_part_stdev(:,:,:,:)
+    integer, allocatable :: btors_neg_part_max(:,:,:,:)
+    integer, allocatable :: btors_neg_part_min(:,:,:,:)
     real(dp), allocatable :: btors_pos_part(:,:,:,:,:)
     real(dp), allocatable :: btors_pos_part_mean(:,:,:,:)
     real(dp), allocatable :: btors_pos_part_stdev(:,:,:,:)
+    integer, allocatable :: btors_pos_part_max(:,:,:,:)
+    integer, allocatable :: btors_pos_part_min(:,:,:,:)
     real(dp) :: btors_neg_total(181)
     real(dp) :: btors_neg_total_mean
     real(dp) :: btors_neg_total_stdev
+    integer :: btors_neg_total_max
+    integer :: btors_neg_total_min
     real(dp) :: btors_pos_total(181)
     real(dp) :: btors_pos_total_mean
     real(dp) :: btors_pos_total_stdev
+    integer :: btors_pos_total_max
+    integer :: btors_pos_total_min
     real(dp) :: btors_neg_pavg(natoms_max)
-    real(dp) :: btors_neg_pmax(natoms_max)
-    real(dp) :: btors_neg_pmin(natoms_max)
+    integer :: btors_neg_pmax(natoms_max)
+    integer :: btors_neg_pmin(natoms_max)
     real(dp) :: btors_pos_pavg(natoms_max)
-    real(dp) :: btors_pos_pmax(natoms_max)
-    real(dp) :: btors_pos_pmin(natoms_max)
+    integer :: btors_pos_pmax(natoms_max)
+    integer :: btors_pos_pmin(natoms_max)
     integer :: btors_prec
     character(len=50) :: btors_prec_str
     character(len=200) :: writebtors
@@ -5364,33 +5379,45 @@ subroutine CAL_BTORSION
     ALLOCATE(btors_neg_part(typecnt,typecnt,typecnt,typecnt,181))
     ALLOCATE(btors_neg_part_mean(typecnt,typecnt,typecnt,typecnt))
     ALLOCATE(btors_neg_part_stdev(typecnt,typecnt,typecnt,typecnt))
+    ALLOCATE(btors_neg_part_max(typecnt,typecnt,typecnt,typecnt))
+    ALLOCATE(btors_neg_part_min(typecnt,typecnt,typecnt,typecnt))
     ALLOCATE(btors_pos_part(typecnt,typecnt,typecnt,typecnt,181))
     ALLOCATE(btors_pos_part_mean(typecnt,typecnt,typecnt,typecnt))
     ALLOCATE(btors_pos_part_stdev(typecnt,typecnt,typecnt,typecnt))
+    ALLOCATE(btors_pos_part_max(typecnt,typecnt,typecnt,typecnt))
+    ALLOCATE(btors_pos_part_min(typecnt,typecnt,typecnt,typecnt))
 
     btors_neg_part = 0.0_dp
     btors_neg_part_mean = 0.0_dp
     btors_neg_part_stdev = 0.0_dp
+    btors_neg_part_max = -181
+    btors_neg_part_min = 1
     btors_pos_part = 0.0_dp
     btors_pos_part_mean = 0.0_dp
     btors_pos_part_stdev = 0.0_dp
+    btors_pos_part_max = -1
+    btors_pos_part_min = 181
     btors_neg_total = 0.0_dp
     btors_neg_total_mean = 0.0_dp
     btors_neg_total_stdev = 0.0_dp
+    btors_neg_total_max = -181
+    btors_neg_total_min = 1
     btors_pos_total = 0.0_dp
     btors_pos_total_mean = 0.0_dp
     btors_pos_total_stdev = 0.0_dp
+    btors_pos_total_max = -1
+    btors_pos_total_min = 181
 
     !Binsize 
     binsize = 1.0_dp  
     
     !Calculate bond torsions from the normal unit vectors of 2 planes
     btors_neg_pavg = 0.0_dp
-    btors_neg_pmax = -180.0_dp
-    btors_neg_pmin = 0.0_dp
+    btors_neg_pmax = -181
+    btors_neg_pmin = 1
     btors_pos_pavg = 0.0_dp
-    btors_pos_pmax = 0.0_dp
-    btors_pos_pmin = 180.0_dp
+    btors_pos_pmax = -1
+    btors_pos_pmin = 181
     tol = 0.0001_dp
     tolvec = 0.1_dp
     btors_neg_cnt = 0
@@ -5410,9 +5437,6 @@ subroutine CAL_BTORSION
             xu1 = xc(it1) - xc(i)
             yu1 = yc(it1) - yc(i)
             zu1 = zc(it1) - zc(i)
-            !xu1 = xu1 - (int(xu1*xl2inv)*xl)
-            !yu1 = yu1 - (int(yu1*yl2inv)*yl)
-            !zu1 = zu1 - (int(zu1*zl2inv)*zl)
             mag1 = sqrt(xu1*xu1 + yu1*yu1 + zu1*zu1)
             xu1 = xu1 / mag1
             yu1 = yu1 / mag1
@@ -5427,9 +5451,6 @@ subroutine CAL_BTORSION
                 xu2 = xc(it2) - xc(it1)
                 yu2 = yc(it2) - yc(it1)
                 zu2 = zc(it2) - zc(it1)
-                !xu2 = xu2 - (int(xu2*xl2inv)*xl)
-                !yu2 = yu2 - (int(yu2*yl2inv)*yl)
-                !zu2 = zu2 - (int(zu2*zl2inv)*zl)
                 mag2 = sqrt(xu2*xu2 + yu2*yu2 + zu2*zu2)
                 xu2 = xu2 / mag2
                 yu2 = yu2 / mag2
@@ -5441,20 +5462,12 @@ subroutine CAL_BTORSION
                 zn1 = xu1*yu2-yu1*xu2
 
                 !Exclude combinations that couldn't form a plane
-                if(abs(xn1)<tolvec.and.abs(yn1)<=tolvec.and.abs(zn1)<=tolvec) then
-                    cycle
-                end if
+                if(abs(xn1)<tolvec.and.abs(yn1)<=tolvec.and.abs(zn1)<=tolvec) cycle
                 
                 !Calculate the last vector that forms an orthonormal frame with n1 and u2 (https://math.stackexchange.com/questions/47059/how-do-i-calculate-a-dihedral-angle-given-cartesian-coordinates)
                 xm1 = yn1*zu2-zn1*yu2
                 ym1 = zn1*xu2-xn1*zu2
                 zm1 = xn1*yu2-yn1*xu2
-                
-                !magn1 = sqrt(xn1*xn1+yn1*yn1+zn1*zn1)
-                !xn1 = xn1 / magn1
-                !yn1 = yn1 / magn1
-                !zn1 = zn1 / magn1
-                !rr1=xn1*xn1+yn1*yn1+zn1*zn1
                 
                 do l=1, ncord(it2)
                     it3 = nnlist(it2,l)
@@ -5466,9 +5479,6 @@ subroutine CAL_BTORSION
                     xu3 = xc(it3) - xc(it2)
                     yu3 = yc(it3) - yc(it2)
                     zu3 = zc(it3) - zc(it2)
-                    !xu3 = xu3 - (int(xu3*xl2inv)*xl)
-                    !yu3 = yu3 - (int(yu3*yl2inv)*yl)
-                    !zu3 = zu3 - (int(zu3*zl2inv)*zl)
                     mag3 = sqrt(xu3*xu3 + yu3*yu3 + zu3*zu3)
                     xu3 = xu3 / mag3
                     yu3 = yu3 / mag3
@@ -5480,57 +5490,23 @@ subroutine CAL_BTORSION
                     zn2 = xu2*yu3-yu2*xu3
 
                     !Exclude combinations that couldn't form a plane
-                    if(abs(xn2)<tolvec.and.abs(yn2)<=tolvec.and.abs(zn2)<=tolvec) then
-                        cycle
-                    end if
-
-                    !magn2 = sqrt(xn2*xn2+yn2*yn2+zn2*zn2)
-                    !xn2 = xn2 / magn2
-                    !yn2 = yn2 / magn2
-                    !zn2 = zn2 / magn2
-                    !rr2=xn2*xn2+yn2*yn2+zn2*zn2
+                    if(abs(xn2)<tolvec.and.abs(yn2)<=tolvec.and.abs(zn2)<=tolvec) cycle
 
                     !Calculate angle between the normal unit vectors
                     n1dotn2 = xn1*xn2+yn1*yn2+zn1*zn2
                     m1dotn2 = xm1*xn2+ym1*yn2+zm1*zn2
                     phi = atan2(m1dotn2, n1dotn2) * 180 / con_pi
-                    !magab = sqrt(rr2*rr1)
-                    !cosphi  = adotb/magab
-
-                    !coscheck = 1.0_dp + cosphi
-                    !if(abs(coscheck)<=tol) cosphi = -0.99999_dp
-                    !if(cosphi>=1.0_dp) cosphi = 0.99999_dp
-                    !phi = acos(cosphi)
-                    !phi = phi*180.0_dp/(con_pi)
                     
                     !if(phi<0) phi=-phi  !Comment out if signed torsion angle needed (causes atoms on opposite sides of a plane to differ)
                     if(phi<0) then
-                        phis = int((phi- (binsize*0.5_dp))/binsize) 
-                    else
-                        phis = int((phi+ (binsize*0.5_dp))/binsize) 
+                        phis = int((phi - (binsize*0.5_dp))/binsize) 
+                    else 
+                        phis = int((phi + (binsize*0.5_dp))/binsize) 
                     end if
-                    if(abs(phis)==0.or.abs(phis)==180) then
-                        phis = abs(phis)
-                    end if
+                    if(abs(phis)==0) phis = abs(phis)
                     
-                    if(phis==0.or.phis==180) then
-                        cnt1neg = cnt1neg + 1
-                        cnt1pos = cnt1pos + 1
-                        btors_neg_total(phis+1) = btors_neg_total(phis+1) + 1
-                        btors_pos_total(phis+1) = btors_pos_total(phis+1) + 1
-                        cnt2neg(typeA, typeB, typeC, typeD) = cnt2neg(typeA, typeB, typeC, typeD) + 1
-                        cnt2pos(typeA, typeB, typeC, typeD) = cnt2pos(typeA, typeB, typeC, typeD) + 1
-                        btors_neg_part(typeA,typeB,typeC,typeD,phis+1) = btors_neg_part(typeA,typeB,typeC,typeD,phis+1) + 1.0_dp
-                        btors_pos_part(typeA,typeB,typeC,typeD,phis+1) = btors_pos_part(typeA,typeB,typeC,typeD,phis+1) + 1.0_dp
-                        btors_neg_cnt(i) = btors_neg_cnt(i) + 1
-                        btors_pos_cnt(i) = btors_pos_cnt(i) + 1
-                        btors_neg_pavg(i) = btors_neg_pavg(i) - phis
-                        btors_pos_pavg(i) = btors_pos_pavg(i) + phis
-                        if (-phis>btors_neg_pmax(i)) btors_neg_pmax(i) = -phis
-                        if (phis>btors_pos_pmax(i)) btors_pos_pmax(i) = phis
-                        if (-phis<btors_neg_pmin(i)) btors_neg_pmin(i) = -phis
-                        if (phis<btors_pos_pmin(i)) btors_pos_pmin(i) = phis
-                    else if(phis<0) then
+                    if(phis<=0.or.phis==180) then
+                        if(phis==180) phis = -phis
                         cnt1neg = cnt1neg + 1
                         btors_neg_total(-phis+1) = btors_neg_total(-phis+1) + 1
                         cnt2neg(typeA, typeB, typeC, typeD) = cnt2neg(typeA, typeB, typeC, typeD) + 1
@@ -5538,8 +5514,14 @@ subroutine CAL_BTORSION
                         btors_neg_cnt(i) = btors_neg_cnt(i) + 1
                         btors_neg_pavg(i) = btors_neg_pavg(i) + phis
                         if (phis>btors_neg_pmax(i)) btors_neg_pmax(i) = phis
+                        if (phis>btors_neg_part_max(typeA,typeB,typeC,typeD)) btors_neg_part_max(typeA,typeB,typeC,typeD) = phis
+                        if (phis>btors_neg_total_max) btors_neg_total_max = phis
                         if (phis<btors_neg_pmin(i)) btors_neg_pmin(i) = phis
-                    else
+                        if (phis<btors_neg_part_min(typeA,typeB,typeC,typeD)) btors_neg_part_min(typeA,typeB,typeC,typeD) = phis
+                        if (phis<btors_neg_total_min) btors_neg_total_min = phis
+                        if(phis==-0.or.phis==-180) phis = -phis
+                    end if
+                    if(phis>=0) then
                         cnt1pos = cnt1pos + 1
                         btors_pos_total(phis+1) = btors_pos_total(phis+1) + 1
                         cnt2pos(typeA, typeB, typeC, typeD) = cnt2pos(typeA, typeB, typeC, typeD) + 1
@@ -5547,31 +5529,35 @@ subroutine CAL_BTORSION
                         btors_pos_cnt(i) = btors_pos_cnt(i) + 1
                         btors_pos_pavg(i) = btors_pos_pavg(i) + phis
                         if (phis>btors_pos_pmax(i)) btors_pos_pmax(i) = phis
+                        if (phis>btors_pos_part_max(typeA,typeB,typeC,typeD)) btors_pos_part_max(typeA,typeB,typeC,typeD) = phis
+                        if (phis>btors_pos_total_max) btors_pos_total_max = phis
                         if (phis<btors_pos_pmin(i)) btors_pos_pmin(i) = phis
+                        if (phis<btors_pos_part_min(typeA,typeB,typeC,typeD)) btors_pos_part_min(typeA,typeB,typeC,typeD) = phis
+                        if (phis<btors_pos_total_min) btors_pos_total_min = phis
                     end if
 
                 end do
             end do
         end do
-        if(btors_neg_cnt(i)>0) btors_neg_pavg(i) = btors_neg_pavg(i) / btors_neg_cnt(i)
-        if(btors_pos_cnt(i)>0) btors_pos_pavg(i) = btors_pos_pavg(i) / btors_pos_cnt(i)
+        btors_neg_pavg(i) = btors_neg_pavg(i) / btors_neg_cnt(i)
+        btors_pos_pavg(i) = btors_pos_pavg(i) / btors_pos_cnt(i)
     end do  
     
     !Write out xyz file
     btors_prec = 1
     write(btors_prec_str,*) btors_prec 
-    writebtors = '(a,2x,3(F10.'//xyz_prec_str//',2X),6(F10.'//btors_prec_str//',2X),i6,i6)'
+    writebtors = '(a,2x,3(F10.'//xyz_prec_str//',2X),2(F10.'//btors_prec_str//',2X,i6,i6,i6))'
     write(58,'(i10,/)') natoms(frame)        
     do i=1, natoms(frame)
-        write(58,writebtors) lc(i),xc(i),yc(i),zc(i),btors_pos_pavg(i),btors_neg_pavg(i),btors_neg_pmax(i),btors_neg_pmin(i)&
-                ,btors_pos_pmax(i),btors_pos_pmin(i),btors_pos_cnt(i),btors_neg_cnt(i)
+        write(58,writebtors) lc(i),xc(i),yc(i),zc(i),btors_neg_pavg(i),btors_neg_pmax(i),btors_neg_pmin(i),btors_neg_cnt(i),&
+        btors_pos_pavg(i),btors_pos_pmax(i),btors_pos_pmin(i),btors_pos_cnt(i)
     end do  
 
     !Normalize distributions (summed off-diagonal and diagonals)
     do i=1, typecnt
         do j=1, typecnt
             do k=1, typecnt
-                do l=k, typecnt  ! from k?
+                do l=1, typecnt
                     do m=1, 181
                         if(cnt1neg>0) then
                             btors_neg_part(i,j,k,l,m) = btors_neg_part(i,j,k,l,m) / (cnt1neg*binsize)
@@ -5588,17 +5574,9 @@ subroutine CAL_BTORSION
             end do
         end do
     end do
-    do i=1, 181  ! 0 to 180?
-        if(cnt1neg>0) then
-            btors_neg_total(i) = btors_neg_total(i) / (cnt1neg*binsize)
-        else
-            btors_neg_total(i) = 0.0_dp
-        end if
-        if(cnt1pos>0) then
-            btors_pos_total(i) = btors_pos_total(i) / (cnt1pos*binsize)
-        else
-            btors_pos_total(i) = 0.0_dp
-        end if
+    do i=1, 181
+        btors_neg_total(i) = btors_neg_total(i) / (cnt1neg*binsize)
+        btors_pos_total(i) = btors_pos_total(i) / (cnt1pos*binsize)
     end do
 
     !Mean of distribution (sum of P(i)*i)
@@ -5607,26 +5585,18 @@ subroutine CAL_BTORSION
             do k=1, typecnt
                 do l=1, typecnt
                     do m=1, 181
-                        if(cnt2neg(i,j,k,l)>0) then
-                            btors_neg_part_mean(i,j,k,l) = btors_neg_part_mean(i,j,k,l) + &
-                            btors_neg_part(i,j,k,l,m) * cnt1neg * real(m,dp) / cnt2neg(i,j,k,l) !normalize by part angles
-                        else
-                            btors_neg_part_mean(i,j,k,l) = 0.0_dp
-                        end if
-                        if(cnt2pos(i,j,k,l)>0) then
-                            btors_pos_part_mean(i,j,k,l) = btors_pos_part_mean(i,j,k,l) + &
-                            btors_pos_part(i,j,k,l,m) * cnt1pos * real(m,dp) / cnt2pos(i,j,k,l) !normalize by part angles
-                        else
-                            btors_pos_part_mean(i,j,k,l) = 0.0_dp
-                        end if
+                        btors_neg_part_mean(i,j,k,l) = btors_neg_part_mean(i,j,k,l) + &
+                        btors_neg_part(i,j,k,l,m) * cnt1neg * real(-(m-1),dp) / cnt2neg(i,j,k,l) !normalize by part angles
+                        btors_pos_part_mean(i,j,k,l) = btors_pos_part_mean(i,j,k,l) + &
+                        btors_pos_part(i,j,k,l,m) * cnt1pos * real(m-1,dp) / cnt2pos(i,j,k,l) !normalize by part angles
                     end do
                 end do
             end do
         end do
     end do
     do i=1, 181
-        btors_neg_total_mean = btors_neg_total_mean + btors_neg_total(i) * i
-        btors_pos_total_mean = btors_pos_total_mean + btors_pos_total(i) * i
+        btors_neg_total_mean = btors_neg_total_mean + btors_neg_total(i) * -(i-1)
+        btors_pos_total_mean = btors_pos_total_mean + btors_pos_total(i) * (i-1)
     end do
 
     !Standard deviation (sqrt(sum of((i-mean)^2*P(i))))
@@ -5635,18 +5605,10 @@ subroutine CAL_BTORSION
             do k=1, typecnt
                 do l=1, typecnt
                     do m=1, 181
-                        if(cnt2neg(i,j,k,l)>0) then
-                            btors_neg_part_stdev(i,j,k,l) = btors_neg_part_stdev(i,j,k,l) + &
-                            (btors_neg_part(i,j,k,l,m)*cnt1neg/cnt2neg(i,j,k,l)) * (real(m,dp)-btors_neg_part_mean(i,j,k,l))**2
-                        else
-                            btors_neg_part_stdev(i,j,k,l) = 0.0_dp
-                        end if
-                        if(cnt2pos(i,j,k,l)>0) then
-                            btors_pos_part_stdev(i,j,k,l) = btors_pos_part_stdev(i,j,k,l) + &
-                            (btors_pos_part(i,j,k,l,m)*cnt1pos/cnt2pos(i,j,k,l)) * (real(m,dp)-btors_pos_part_mean(i,j,k,l))**2
-                        else
-                            btors_pos_part_stdev(i,j,k,l) = 0.0_dp
-                        end if
+                        btors_neg_part_stdev(i,j,k,l) = btors_neg_part_stdev(i,j,k,l) + &
+                        (btors_neg_part(i,j,k,l,m)*cnt1neg/cnt2neg(i,j,k,l)) * (real(-(m-1),dp)-btors_neg_part_mean(i,j,k,l))**2
+                        btors_pos_part_stdev(i,j,k,l) = btors_pos_part_stdev(i,j,k,l) + &
+                        (btors_pos_part(i,j,k,l,m)*cnt1pos/cnt2pos(i,j,k,l)) * (real(m-1,dp)-btors_pos_part_mean(i,j,k,l))**2
                     end do
                     btors_neg_part_stdev(i,j,k,l) = sqrt(btors_neg_part_stdev(i,j,k,l))
                     btors_pos_part_stdev(i,j,k,l) = sqrt(btors_pos_part_stdev(i,j,k,l))
@@ -5655,8 +5617,8 @@ subroutine CAL_BTORSION
         end do
     end do
     do i=1, 181
-        btors_neg_total_stdev = btors_neg_total_stdev + btors_neg_total(i)*(real(i,dp)-btors_neg_total_mean)**2
-        btors_pos_total_stdev = btors_pos_total_stdev + btors_pos_total(i)*(real(i,dp)-btors_pos_total_mean)**2
+        btors_neg_total_stdev = btors_neg_total_stdev + btors_neg_total(i)*(real(-(i-1),dp)-btors_neg_total_mean)**2
+        btors_pos_total_stdev = btors_pos_total_stdev + btors_pos_total(i)*(real(i-1,dp)-btors_pos_total_mean)**2
     end do
     btors_neg_total_stdev = sqrt(btors_neg_total_stdev)
     btors_pos_total_stdev = sqrt(btors_pos_total_stdev)
@@ -5670,57 +5632,66 @@ subroutine CAL_BTORSION
 
         !Write label before torsion angle values
         write(54,15)
-        15  format('      Frame',',      Type1',',      Type2',',      Type3',  &
-                   ',      Type4',', Neg Angles',',    Neg Avg',',Neg Std Dev', &
-                   ', Pos Angles',',    Pos Avg',',Pos Std Dev'$)
+        15  format('      Frame',',      Type1',',      Type2',',      Type3',',      Type4',',    Neg Avg',',Neg Std Dev',&
+        ',    Neg Max',',    Neg Min',',  N NAngles',',    Pos Avg',',Pos Std Dev',',    Pos Max',',    Pos Min',',  N PAngles'$)
 
         !Write out torsion angle values
-        do i=-180, 0
-            write(54,20) i
-            20    format(',',i11,$)
+        do i=0, -180, -1
+            write(54, '(a,2x,i11,$)') ',',i
         end do
-        do i=0, 180
-            write(54,21) i
-            21    format(',',i11,$)
+        do i=0, 180, 1
+            write(54, '(a,2x,i11,$)') ',',i
         end do
 
         write(54,*) !New line
     end if
 
     !Write total torsion angle label
-    write(54,25) frame,cnt1neg,btors_neg_total_mean,btors_neg_total_stdev,cnt1pos,btors_pos_total_mean,btors_pos_total_stdev
-    25  format(i11,',      Total',',      Total',',      Total',',      Total',2(',',i11,',',f11.6,',',f11.6)$)
+    write(54,20) frame,btors_neg_total_mean,btors_neg_total_stdev,btors_neg_total_max,btors_neg_total_min,cnt1neg,&
+    btors_pos_total_mean,btors_pos_total_stdev,btors_pos_total_max,btors_pos_total_min,cnt1pos
+    20  format(i11,',      Total',',      Total',',      Total',',      Total',2(',',f11.6,',',f11.6,',',i11,',',i11,',',i11),$)
 
     !Write total bond torsion out
     do i=1, 181
-        write(54,30) btors_neg_total(i),btors_pos_total(i)
-        30  format(',',f11.6,',',f11.6,$)
+        write(54, '(a,2x,f11.6,$)') ',',btors_neg_total(i)
+    end do
+    do i=1, 181
+        write(54, '(a,2x,f11.6,$)') ',',btors_pos_total(i)
     end do
 
     !Write out to featureset file
-    write(90,31) btors_neg_total_mean,btors_neg_total_stdev,btors_pos_total_mean,btors_pos_total_stdev
-    31  format(',',f11.6,',',f11.6,',',f11.6,',',f11.6,$)
+    write(90,30) btors_neg_total_mean,btors_neg_total_stdev,btors_neg_total_max,btors_neg_total_min,cnt1neg,&
+    btors_pos_total_mean,btors_pos_total_stdev,btors_pos_total_max,btors_pos_total_min,cnt1pos
+    30  format(',      Total',',      Total',',      Total',',      Total',2(',',f11.6,',',f11.6,',',i11,',',i11,',',i11),$)
     do i=1, 181
-        write(90,32) btors_neg_total(i),btors_pos_total(i)
-        32  format(',',f11.6,',',f11.6,$)
+        write(90, '(a,2x,f11.6,$)') ',',btors_neg_total(i)
+    end do
+    do i=1, 181
+        write(90, '(a,2x,f11.6,$)') ',',btors_pos_total(i)
     end do
 
     write(54,*) !New line
 
-    if(typecnt>1) then     !Only output partials for more than 1 component
-        !Write partial bond torsion out
+    !Write partial bond torsion out
+    if(typecnt>1) then
         do i=1, typecnt
             do j=1, typecnt
                 do k=1, typecnt
-                    do l=k, typecnt
-                        !Write partial bond torsion labels
-                        write(54,35) frame,i,j,k,l,cnt2neg(i,j,k,l),btors_neg_part_mean(i,j,k,l), btors_neg_part_stdev(i,j,k,l),&
-                                cnt2pos(i,j,k,l),btors_pos_part_mean(i,j,k,l), btors_pos_part_stdev(i,j,k,l)
-                        35  format(i11,4(',',9x,i2),2(',',i11,',',f11.6,',',f11.6),$)
+                    do l=1, typecnt
+                        write(54,35) frame,i,j,k,l,btors_neg_part_mean(i,j,k,l),btors_neg_part_stdev(i,j,k,l),&
+                        btors_neg_part_max(i,j,k,l),btors_neg_part_min(i,j,k,l),cnt2neg(i,j,k,l),btors_pos_part_mean(i,j,k,l),&
+                        btors_pos_part_stdev(i,j,k,l),btors_pos_part_max(i,j,k,l),btors_pos_part_min(i,j,k,l),cnt2pos(i,j,k,l) 
+                        35  format(i11,4(',',9x,i2),2(',',f11.6,',',f11.6,',',i11,',',i11,',',i11),$)
+                        write(90,36) i,j,k,l,btors_neg_part_mean(i,j,k,l),btors_neg_part_stdev(i,j,k,l),&
+                        btors_neg_part_max(i,j,k,l),btors_neg_part_min(i,j,k,l),cnt2neg(i,j,k,l),btors_pos_part_mean(i,j,k,l),&
+                        btors_pos_part_stdev(i,j,k,l),btors_pos_part_max(i,j,k,l),btors_pos_part_min(i,j,k,l),cnt2pos(i,j,k,l) 
+                        36  format(4(',',9x,i2),2(',',f11.6,',',f11.6,',',i11,',',i11,',',i11),$)
                     
-                        do m=1, 180
-                            write(54,40) btors_neg_part(i,j,k,l,m),btors_pos_part(i,j,k,l,m)
-                            40  format(',',f11.6,',',f11.6,$)
+                        do m=1, 181
+                            write(54, '(a,2x,f11.6,$)') ',',btors_neg_part(i,j,k,l,m)
+                        end do
+                        do m=1, 181
+                            write(54, '(a,2x,f11.6,$)') ',',btors_pos_part(i,j,k,l,m)
                         end do
                         write(54,*)  !New line
                     end do
@@ -5732,9 +5703,13 @@ subroutine CAL_BTORSION
     DEALLOCATE(btors_pos_part)
     DEALLOCATE(btors_pos_part_mean)
     DEALLOCATE(btors_pos_part_stdev)
+    DEALLOCATE(btors_pos_part_max)
+    DEALLOCATE(btors_pos_part_min)
     DEALLOCATE(btors_neg_part)
     DEALLOCATE(btors_neg_part_mean)
     DEALLOCATE(btors_neg_part_stdev)
+    DEALLOCATE(btors_neg_part_max)
+    DEALLOCATE(btors_neg_part_min)
 
     return
 end 
@@ -6759,14 +6734,11 @@ subroutine CAL_SC_XYZ(con_scmax,sc_classify,sc_score,sc_orient,tsin,tcos)
 
     !Write out classification cnts for SC types
     if(headers_done==0) then
-        write(70,10)
-        10    format('Signature cells classification histogram') 
-        write(70,20)
-        20    format('   Frame',$)     
+        write(70,'(a)') 'Signature cells classification histogram'
+        write(70,'(a,$)') '   Frame'
         do i=1, in_sc_cells
             cell=in_sc_labs(i)
-            write(70,30) cell 
-            30      format(i8,$)                    
+            write(70,'(i8,$)') cell 
         end do
     end if
     
@@ -6783,8 +6755,7 @@ subroutine CAL_SC_XYZ(con_scmax,sc_classify,sc_score,sc_orient,tsin,tcos)
     !Write out featureset file
     do i=1, in_sc_cells             
         cell=in_sc_labs(i)
-        write(90,51) tempcnt(cell)
-        51    format(',',i11,$)    
+        write(90,'(a,i11,$)') ',',tempcnt(cell)
         
         print*,'SC ',cell,':',tempcnt(cell)
     end do            
@@ -6798,9 +6769,7 @@ subroutine CAL_SC_XYZ(con_scmax,sc_classify,sc_score,sc_orient,tsin,tcos)
         
         do j=1, in_sc_cells
             cell=in_sc_labs(j) 
-            
-            write(72,110) sc_score(i,cell)
-            110    format(f10.5,$)     
+            write(72,'(f10.5,$)') sc_score(i,cell)
         end do
         write(72,*)                                                                                         
     end do
@@ -7575,66 +7544,37 @@ subroutine CAL_Q6_Q6Q6HIST(q6connect)
     !output averages
     write(60,140) frame,q6connect_avg,q6connect_avgB,q6connect_avgS                                          
     140 format(i11,3(',',f11.6),$)   
-    
-    !write out feature file   
     write(90,141) q6connect_avg,q6connect_avgB,q6connect_avgS                                 
     141 format(',',f11.6,',',f11.6,',',f11.6,$)  
     
     !output total coordination histogram  
-    write(60,150) q6connect_distbn(22)
-    150 format(',',i11,$)
-    
-    !write out feature file
-    write(90,151) q6connect_distbn(22)
-    151 format(',',i11,$)    
-    
+    write(60,'(a,i11,$)') ',',q6connect_distbn(22)
+    write(90,'(a,i11,$)') ',',q6connect_distbn(22)
     do i=1, 21
-        write(60,160) q6connect_distbn(i)
-        160   format(',',i11,$)      
+        write(60,'(a,i11,$)') ',',q6connect_distbn(i)
     end do
-    
-    !write out feature file
     do i=1, 21
-        write(90,161) q6connect_distbn(i)
-        161   format(',',i11,$)      
+        write(90,'(a,i11,$)') ',',q6connect_distbn(i)
     end do
     
     !output bulk coordination histogram      
-    write(60,170) q6connect_distbnB(22)
-    170 format(',',i11,$)
-    
-    !write out feature file
-    write(90,171) q6connect_distbnB(22)
-    171 format(',',i11,$)  
-    
+    write(60,'(a,i11,$)') ',',q6connect_distbnB(22)
+    write(90,'(a,i11,$)') ',',q6connect_distbnB(22)
     do i=1, 21
-        write(60,180) q6connect_distbnB(i)
-        180   format(',',i11,$)      
+        write(60,'(a,i11,$)') ',',q6connect_distbnB(i)
     end do
-    
-    !write out feature file      
     do i=1, 21
-        write(90,181) q6connect_distbnB(i)
-        181   format(',',i11,$)      
+        write(90,'(a,i11,$)') ',',q6connect_distbnB(i)
     end do
     
     !output surface coordination histogram      
-    write(60,190) q6connect_distbnS(22)
-    190 format(',',i11,$)
-    
-    !write out feature file  
-    write(90,191) q6connect_distbnS(22)
-    191 format(',',i11,$)
-    
+    write(60,'(a,i11,$)') ',',q6connect_distbnS(22)
+    write(90,'(a,i11,$)') ',',q6connect_distbnS(22)
     do i=1, 21
-        write(60,200) q6connect_distbnS(i)
-        200   format(',',i11,$)      
+        write(60,'(a,i11,$)') ',',q6connect_distbnS(i)
     end do 
-    
-    !write out feature file       
     do i=1, 21
-        write(90,201) q6connect_distbnS(i)
-        201   format(',',i11,$)      
+        write(90,'(a,i11,$)') ',',q6connect_distbnS(i)
     end do   
 
     write(60,*)

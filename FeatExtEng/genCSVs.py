@@ -4,6 +4,7 @@ import os
 from os.path import isdir, exists
 import pandas as pd
 import pickle
+import re
 import shutil
 import tarfile
 from zipfile import ZipFile
@@ -31,6 +32,7 @@ def renameXYZs():
     npCnt = 0  # Different starting point for different type of ordering, e.g. CS != RRAL
     workingList = []
     if not isdir(targetDir): os.mkdir(targetDir)
+    with open(f"{targetDir}/{outMDfile}", 'a') as f: f.write('confID,T,P,PE,KE,TE\n')
     for sourcePath in sourcePaths:
         for NPdir in os.listdir(sourcePath):
             print(f"  Nanoparticle: {NPdir}")
@@ -48,8 +50,8 @@ def renameXYZs():
                 continue
              
             confCnt = 0 + npCnt*numFramePerNP
-            for NPconf in os.listdir(f"{NPdirPath}/{NPdir}S2"): 
-                if 'min' not in NPconf: continue  # Skip the unminimised configurations
+            allS2NPs = [np for np in os.listdir(f"{NPdirPath}/{NPdir}S2") if 'min' in np]
+            for NPconf in sorted(allS2NPs, key=lambda key: [int(i) for i in re.findall('min.([0-9]+)', key)]):
                 oriFilePath = f"{NPdirPath}/{NPdir}S2/{NPconf}"
                 confID = str(confCnt).zfill(5)
                 print(f"  Conformation ID: {confID}")
@@ -81,8 +83,8 @@ def renameXYZs():
                         if '- MINIMISATION -' in line and not foundMinLine: foundMinLine = True
                         elif 'Loop time of' in line and foundMinLine: 
                             confID = str(confCnt).zfill(zFillNum)
-                            temp, pres, kinE, potE, totE = prevLine.split()[2:]
-                            f2.write(f"{confID},{temp},{pres},{kinE},{potE},{totE}\n")
+                            temp, pres, potE, kinE, totE = prevLine.split()[2:]
+                            f2.write(f"{confID},{temp},{pres},{potE},{kinE},{totE}\n")
                             confCnt += 1
                             foundMinLine = False
                         prevLine = line
@@ -96,15 +98,16 @@ def renameXYZs():
     return workingList
 
 
-def genDAPfiles(work):
+def runNCPac(work, verbose=False):
     confDir   = work[0]
     confID    = work[1]
     # Execute NCPac.exe for every directories
+    if verbose: print(f"    Running NCPac for {confID}...")
     os.chdir(confDir)
     os.system(f"./{NCPacExeName}")
     # Move .xyz, FEATURES.csv to {finalDir}
     shutil.copy(f"{confDir}/{confID}.xyz", f"{finalDataPath}/Structures")
-    if not exists(f"od_FEATURESET.csv"):  # If execution unsuccessful due to being a BNP instead of TNP
+    if not exists(f"{confDir}/od_FEATURESET.csv"):  # If execution unsuccessful due to being a BNP instead of TNP
         open(f"{finalDataPath}/Features/{confID}.csv", 'w').close()
     else:
         shutil.copy(f"{confDir}/od_FEATURESET.csv", f"{finalDataPath}/Features/{confID}.csv")
@@ -122,18 +125,30 @@ def runNCPacParallel(workingList):
     if not isdir(f"{finalDataPath}/Structures"): os.mkdir(f"{finalDataPath}/Structures")
     if not isdir(f"{finalDataPath}/Features"): os.mkdir(f"{finalDataPath}/Features")
     # Check if confDir still exists (could have been run already)
-    remainingWork = []
-    for workParam in workingList:
-        if not isdir(workParam[0]): workingList.remove(workParam)  # If removing confDir after running NCPac
-        if not exists(f"{workParam[0]}/od_FEATURESET.csv"): remainingWork.append(workParam)  # If not removing confDir after runnning NCPac (will include BNPs too)
-    with Pool() as p:
-        p.map(genDAPfiles, remainingWork)
+    with Pool() as p: p.map(runNCPac, remainingWork)
 
 
 if __name__ == '__main__':
-    workingList = renameXYZs()
-    with open('workingList.pickle', 'wb') as f: pickle.dump(workingList, f)
-    with open('workingList.pickle', 'rb') as f: workingList = pickle.load(f)
-    runNCPacParallel(workingList)
+    runTask = 'runNCPac'  # 'renameXYZs' or 'runNCPac' 
+    runParallel = True
+    
+    if runTask == 'renameXYZs':
+        # Copying necessary files to targeted destinations
+        workingList = renameXYZs()
+        with open('workingList.pickle', 'wb') as f: pickle.dump(workingList, f)
+
+    elif runTask == 'runNCPac':
+        # Running NCPac for each nanoparticle
+
+        with open('workingList.pickle', 'rb') as f: workingList = pickle.load(f)
+        remainingWork = []
+        for workParam in workingList:
+            # if not isdir(workParam[0]): workingList.remove(workParam)  # If removing confDir after running NCPac
+            if not exists(f"{workParam[0]}/od_FEATURESET.csv"): remainingWork.append(workParam)  # If not removing confDir after runnning NCPac (will include BNPs too)
+        if runParallel: 
+            runNCPacParallel(remainingWork)
+        else:
+            for work in remainingWork:
+                runNCPac(work, verbose=True)
     print("All DONE!")
 
