@@ -26,8 +26,15 @@ Date Accomplished: 1/1/23
 - Shape: Spherical
 - Ratio: i:j:k where i, j, k are from {2, 4, 6, 8}, with an additional constraint if i+j+k == 10
 - Atomic ordering: (chosen with reference to Figure 2 in the review by Crawley et al, Heterogenous Trimetallic Nanoparticles as Catalysts, Chem. Rev. 2022, 122, 6, 6795--6849)
-    - CS: random solid solution (M1M2M3)
-    - # TODO: Fill in the rest of the types according to the reference
+    - L10R: ordered alloy with randomly distributed M3 (o-M1M2-M3)
+    - CS: inner-core@core@shell (M1@M2@M3)
+    - CL10S: ordered-core@shell (o-M1M2@M3)
+    - CRALS: random-core@shell (M1M2@M3)
+    - RRAL: random solid solution (M1M2M3)
+    - CSRAL: core@random-shell (M1@M2M3)
+    - CSL10: core@ordered-shell (M1@o-M2M3)
+    - CRSR: core@shell with randomly distributed M3 (M1M2@M2M3)
+    - LL10: ordered intermetallic solution (o-M1M2M3)
 
 ### Generation of TNP initial structures
 1. Modify the variables in the files below under ./InitStruct/ to generate other combinations:
@@ -71,8 +78,8 @@ Date Accomplished: 1/1/23
 
 ### Feature extraction of TNPs
 1. Go to ./FeatExtEng/
-2. Modify the paths and parameters in genDAPfiles.py as appropriate.
-3. Submit runGenDAPfiles.sh to the HPC. This will generate:
+2. Modify the paths and parameters in genCSVs.py as appropriate.
+3. Submit runGenDAPdata.sh to the HPC. This will generate:
     - {MDout.csv}, which contains the output of MD simulations of all TNPs.
     - {features.csv}, which contains the features extracted by NCPac for all TNPs.
 4. Modify the parameters in mergeFeatures.py and run it. This will merge the information from the 2 csv files and generate a new {AuPtPd_nanoparticle_dataset.csv} following the format of dataset stored on CSIRO's Data Access Portal, such as https://data.csiro.au/collection/csiro:40669 (gold nanoparticle).
