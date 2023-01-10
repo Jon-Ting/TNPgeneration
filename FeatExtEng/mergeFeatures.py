@@ -419,7 +419,7 @@ def concatNPfeats(verbose=False):
 
 
 if __name__ == '__main__':
-    runTask = 'mergeReformatData' # 'mergeReformatData'  # 'mergeReformatData' or 'concatNPfeats' or 'debug'
+    runTask = 'concatNPfeats' # 'mergeReformatData'  # 'mergeReformatData' or 'concatNPfeats' or 'debug'
     
     if runTask == 'mergeReformatData':  # Parallel 
         if not isdir(featEngPath): os.mkdir(featEngPath)
