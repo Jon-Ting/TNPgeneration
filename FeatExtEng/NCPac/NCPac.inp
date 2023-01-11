@@ -1,4 +1,4 @@
-test.xyz          - name of xyz input file                                              [in_filexyz] 
+IIIII.xyz         - name of xyz input file                                              [in_filexyz] 
 4                 - decimal places in coordinates                                       [in_xyz_prec]
 10.0              - buffer distance from box boundaries in each axis                    [in_bound_dist]
 1                 - write out to screen                                      (0=N,1=Y)  [in_write_screen]
