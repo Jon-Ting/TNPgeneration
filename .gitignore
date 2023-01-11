@@ -2,5 +2,6 @@ InitStruct/__pycache__/
 InitStruct/*NP/
 InitStruct/*log*
 MDsim/*.log
+FeatExtEng/__pycache__/
 FeatExtEng/*.log
 FeatExtEng/NCPac/*.mod
