@@ -9,26 +9,26 @@ import shutil
 from zipfile import ZipFile
 
 
-# Important variables to check!
+runTask = 'runNCPac'  # 'setupNCPac' or 'runNCPac' 
+runParallel = True
+    
 PROJECT, USER_GROUP_ID, USER_NAME, ELE_COMB = 'p00', '564', 'jt5911', 'AuPtPd'
 sourceDirs = ['CS', 'LL10', 'CL10S', 'CRALS', 'CSL10', 'L10R', 'CSRAL', 'RRAL', 'CRSR']
 sourcePaths = [f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}_MDsim/{dir}" for dir in sourceDirs]
 targetDir = f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}"
-finalDataPath = f"{targetDir}/finalData"  # Final path to place the results
-
+finalDataPath = f"{targetDir}/finalData"
 numFramePerNP = 11
 zFillNum = 5
 doneFile = 'DONE.txt'
 outMDfile = 'MDout.csv'
 NCPacExeName, NCPacInpName = 'NCPac.exe', 'NCPac.inp'
-# workingDir = f"/home/659/{USER_NAME}/TNPgeneration/MDsim"
 path2NCPacExe = f"/home/{USER_GROUP_ID}/{USER_NAME}/TNPgeneration/FeatExtEng/NCPac/{NCPacExeName}"
 path2NCPacInp = f"/home/{USER_GROUP_ID}/{USER_NAME}/TNPgeneration/FeatExtEng/NCPac/{NCPacInpName}"
 headerLine = f"CSIRO Nanostructure Databank - {ELE_COMB} Nanoparticle Data Set"
 
-def renameXYZs():
+def setupNCPac():
     print("Copying xyz files to individual directories and relabelling numerically...")
-    npCnt = 0  # Different starting point for different type of ordering, e.g. CS != RRAL
+    npCnt = 0
     workingList = []
     if not isdir(targetDir): os.mkdir(targetDir)
     with open(f"{targetDir}/{outMDfile}", 'a') as f: f.write('confID,T,P,PE,KE,TE\n')
@@ -39,9 +39,6 @@ def renameXYZs():
 
             # If not done for the nanoparticle yet, reextract Stage 2 files
             if not exists(f"{NPdirPath}/{doneFile}"):
-                if not exists(f"{NPdirPath}/{NPdir}S2.zip"):
-                    shutil.make_archive(f"{NPdirPath}/{NPdir}S2", 'zip', f"{NPdirPath}", f"{NPdir}S2")
-                    print("    Zipped Stage 2 files...")
                 with ZipFile(f"{NPdirPath}/{NPdir}S2.zip", 'r') as f: f.extractall(f"{NPdirPath}/")
                 print("    Extracted Stage 2 files...")
             else:
@@ -114,6 +111,7 @@ def runNCPac(work, verbose=False):
     for f in glob(f"ov_*"): os.remove(f)
     for f in glob(f"od_*"): 
         if f != 'od_FEATURESET.csv': os.remove(f)
+    open(f"{confDir}/{doneFile}", 'w').close()
     print(f"   {confID} Done!")
 
 
@@ -126,26 +124,19 @@ def runNCPacParallel(remainingWork):
 
 
 if __name__ == '__main__':
-    runTask = 'runNCPac'  # 'renameXYZs' or 'runNCPac' 
-    runParallel = False
-    
-    if runTask == 'renameXYZs':
-        # Copying necessary files to targeted destinations
-        workingList = renameXYZs()
+    if runTask == 'setupNCPac':
+        workingList = setupNCPac()
         with open('workingList.pickle', 'wb') as f: pickle.dump(workingList, f)
-
     elif runTask == 'runNCPac':
-        # Running NCPac for each nanoparticle
-
         with open('workingList.pickle', 'rb') as f: workingList = pickle.load(f)
+
         remainingWork = []
         for workParam in workingList:
-            # if not isdir(workParam[0]): workingList.remove(workParam)  # If removing confDir after running NCPac
-            if not exists(f"{workParam[0]}/od_FEATURESET.csv"): remainingWork.append(workParam)  # If not removing confDir after runnning NCPac (will include BNPs too)
+            if not exists(f"{workParam[0]}/{doneFile}"): remainingWork.append(workParam)
+
         if runParallel: 
             runNCPacParallel(remainingWork)
         else:
             for work in remainingWork:
                 runNCPac(work, verbose=True)
     print("All DONE!")
-

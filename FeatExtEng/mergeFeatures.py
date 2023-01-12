@@ -6,6 +6,9 @@ from os.path import isdir, exists
 import pandas as pd
 
 
+runTask = 'concatNPfeats'  # 'mergeReformatData' or 'concatNPfeats' or 'debug'
+runParallel = True
+    
 PROJECT, USER_NAME, ELE_COMB = 'p00', 'jt5911', 'AuPtPd'
 MDoutFName = f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}/MDout.csv"
 featSourcePath = f"/scratch/{PROJECT}/{USER_NAME}/{ELE_COMB}/finalData/Features"
@@ -137,7 +140,7 @@ ALL_HEADERS_LIST = ['T', 'P', 'Potential_E', 'Kinetic_E', 'Total_E',
                     'AuAuAuAu_BTneg_avg', 'AuAuAuAu_BTneg_std', 'AuAuAuAu_BTneg_max', 'AuAuAuAu_BTneg_min', 'AuAuAuAu_BTneg_num', 'AuAuAuAu_BTpos_avg', 'AuAuAuAu_BTpos_std', 'AuAuAuAu_BTpos_max', 'AuAuAuAu_BTpos_min', 'AuAuAuAu_BTpos_num', 
                     'AuAuAuPd_BTneg_avg', 'AuAuAuPd_BTneg_std', 'AuAuAuPd_BTneg_max', 'AuAuAuPd_BTneg_min', 'AuAuAuPd_BTneg_num', 'AuAuAuPd_BTpos_avg', 'AuAuAuPd_BTpos_std', 'AuAuAuPd_BTpos_max', 'AuAuAuPd_BTpos_min', 'AuAuAuPd_BTpos_num', 
                     'AuAuAuPt_BTneg_avg', 'AuAuAuPt_BTneg_std', 'AuAuAuPt_BTneg_max', 'AuAuAuPt_BTneg_min', 'AuAuAuPt_BTneg_num', 'AuAuAuPt_BTpos_avg', 'AuAuAuPt_BTpos_std', 'AuAuAuPt_BTpos_max', 'AuAuAuPt_BTpos_min', 'AuAuAuPt_BTpos_num', 
-                    'AuAuPdAu_BTneg_avg', 'AuAuPdAu_BTneg_std', 'AuAuPdAu_BTneg_max', 'AuAuPdAu_BTneg_min', 'AuAuPdAu_BTneg_num', 'AuAuPdAu_BTpos_avg', 'AuAuPdAu_BTpos_std', 'AuAuPdAu_BTpos_max', 'AuAuPdAu_BTpos_min', 'AuAuAuAu_BTpos_num',  
+                    'AuAuPdAu_BTneg_avg', 'AuAuPdAu_BTneg_std', 'AuAuPdAu_BTneg_max', 'AuAuPdAu_BTneg_min', 'AuAuPdAu_BTneg_num', 'AuAuPdAu_BTpos_avg', 'AuAuPdAu_BTpos_std', 'AuAuPdAu_BTpos_max', 'AuAuPdAu_BTpos_min', 'AuAuPdAu_BTpos_num',  
                     'AuAuPdPd_BTneg_avg', 'AuAuPdPd_BTneg_std', 'AuAuPdPd_BTneg_max', 'AuAuPdPd_BTneg_min', 'AuAuPdPd_BTneg_num', 'AuAuPdPd_BTpos_avg', 'AuAuPdPd_BTpos_std', 'AuAuPdPd_BTpos_max', 'AuAuPdPd_BTpos_min', 'AuAuPdPd_BTpos_num', 
                     'AuAuPdPt_BTneg_avg', 'AuAuPdPt_BTneg_std', 'AuAuPdPt_BTneg_max', 'AuAuPdPt_BTneg_min', 'AuAuPdPt_BTneg_num', 'AuAuPdPt_BTpos_avg', 'AuAuPdPt_BTpos_std', 'AuAuPdPt_BTpos_max', 'AuAuPdPt_BTpos_min', 'AuAuPdPt_BTpos_num', 
                     'AuAuPtAu_BTneg_avg', 'AuAuPtAu_BTneg_std', 'AuAuPtAu_BTneg_max', 'AuAuPtAu_BTneg_min', 'AuAuPtAu_BTneg_num', 'AuAuPtAu_BTpos_avg', 'AuAuPtAu_BTpos_std', 'AuAuPtAu_BTpos_max', 'AuAuPtAu_BTpos_min', 'AuAuPtAu_BTpos_num',  
@@ -165,7 +168,7 @@ ALL_HEADERS_LIST = ['T', 'P', 'Potential_E', 'Kinetic_E', 'Total_E',
                     'PdAuAuAu_BTneg_avg', 'PdAuAuAu_BTneg_std', 'PdAuAuAu_BTneg_max', 'PdAuAuAu_BTneg_min', 'PdAuAuAu_BTneg_num', 'PdAuAuAu_BTpos_avg', 'PdAuAuAu_BTpos_std', 'PdAuAuAu_BTpos_max', 'PdAuAuAu_BTpos_min', 'PdAuAuAu_BTpos_num', 
                     'PdAuAuPd_BTneg_avg', 'PdAuAuPd_BTneg_std', 'PdAuAuPd_BTneg_max', 'PdAuAuPd_BTneg_min', 'PdAuAuPd_BTneg_num', 'PdAuAuPd_BTpos_avg', 'PdAuAuPd_BTpos_std', 'PdAuAuPd_BTpos_max', 'PdAuAuPd_BTpos_min', 'PdAuAuPd_BTpos_num', 
                     'PdAuAuPt_BTneg_avg', 'PdAuAuPt_BTneg_std', 'PdAuAuPt_BTneg_max', 'PdAuAuPt_BTneg_min', 'PdAuAuPt_BTneg_num', 'PdAuAuPt_BTpos_avg', 'PdAuAuPt_BTpos_std', 'PdAuAuPt_BTpos_max', 'PdAuAuPt_BTpos_min', 'PdAuAuPt_BTpos_num', 
-                    'PdAuPdAu_BTneg_avg', 'PdAuPdAu_BTneg_std', 'PdAuPdAu_BTneg_max', 'PdAuPdAu_BTneg_min', 'PdAuPdAu_BTneg_num', 'PdAuPdAu_BTpos_avg', 'PdAuPdAu_BTpos_std', 'PdAuPdAu_BTpos_max', 'PdAuPdAu_BTpos_min', 'PdAuAuAu_BTpos_num',  
+                    'PdAuPdAu_BTneg_avg', 'PdAuPdAu_BTneg_std', 'PdAuPdAu_BTneg_max', 'PdAuPdAu_BTneg_min', 'PdAuPdAu_BTneg_num', 'PdAuPdAu_BTpos_avg', 'PdAuPdAu_BTpos_std', 'PdAuPdAu_BTpos_max', 'PdAuPdAu_BTpos_min', 'PdAuPdAu_BTpos_num',  
                     'PdAuPdPd_BTneg_avg', 'PdAuPdPd_BTneg_std', 'PdAuPdPd_BTneg_max', 'PdAuPdPd_BTneg_min', 'PdAuPdPd_BTneg_num', 'PdAuPdPd_BTpos_avg', 'PdAuPdPd_BTpos_std', 'PdAuPdPd_BTpos_max', 'PdAuPdPd_BTpos_min', 'PdAuPdPd_BTpos_num', 
                     'PdAuPdPt_BTneg_avg', 'PdAuPdPt_BTneg_std', 'PdAuPdPt_BTneg_max', 'PdAuPdPt_BTneg_min', 'PdAuPdPt_BTneg_num', 'PdAuPdPt_BTpos_avg', 'PdAuPdPt_BTpos_std', 'PdAuPdPt_BTpos_max', 'PdAuPdPt_BTpos_min', 'PdAuPdPt_BTpos_num', 
                     'PdAuPtAu_BTneg_avg', 'PdAuPtAu_BTneg_std', 'PdAuPtAu_BTneg_max', 'PdAuPtAu_BTneg_min', 'PdAuPtAu_BTneg_num', 'PdAuPtAu_BTpos_avg', 'PdAuPtAu_BTpos_std', 'PdAuPtAu_BTpos_max', 'PdAuPtAu_BTpos_min', 'PdAuPtAu_BTpos_num',  
@@ -193,7 +196,7 @@ ALL_HEADERS_LIST = ['T', 'P', 'Potential_E', 'Kinetic_E', 'Total_E',
                     'PtAuAuAu_BTneg_avg', 'PtAuAuAu_BTneg_std', 'PtAuAuAu_BTneg_max', 'PtAuAuAu_BTneg_min', 'PtAuAuAu_BTneg_num', 'PtAuAuAu_BTpos_avg', 'PtAuAuAu_BTpos_std', 'PtAuAuAu_BTpos_max', 'PtAuAuAu_BTpos_min', 'PtAuAuAu_BTpos_num', 
                     'PtAuAuPd_BTneg_avg', 'PtAuAuPd_BTneg_std', 'PtAuAuPd_BTneg_max', 'PtAuAuPd_BTneg_min', 'PtAuAuPd_BTneg_num', 'PtAuAuPd_BTpos_avg', 'PtAuAuPd_BTpos_std', 'PtAuAuPd_BTpos_max', 'PtAuAuPd_BTpos_min', 'PtAuAuPd_BTpos_num', 
                     'PtAuAuPt_BTneg_avg', 'PtAuAuPt_BTneg_std', 'PtAuAuPt_BTneg_max', 'PtAuAuPt_BTneg_min', 'PtAuAuPt_BTneg_num', 'PtAuAuPt_BTpos_avg', 'PtAuAuPt_BTpos_std', 'PtAuAuPt_BTpos_max', 'PtAuAuPt_BTpos_min', 'PtAuAuPt_BTpos_num', 
-                    'PtAuPdAu_BTneg_avg', 'PtAuPdAu_BTneg_std', 'PtAuPdAu_BTneg_max', 'PtAuPdAu_BTneg_min', 'PtAuPdAu_BTneg_num', 'PtAuPdAu_BTpos_avg', 'PtAuPdAu_BTpos_std', 'PtAuPdAu_BTpos_max', 'PtAuPdAu_BTpos_min', 'PtAuAuAu_BTpos_num',  
+                    'PtAuPdAu_BTneg_avg', 'PtAuPdAu_BTneg_std', 'PtAuPdAu_BTneg_max', 'PtAuPdAu_BTneg_min', 'PtAuPdAu_BTneg_num', 'PtAuPdAu_BTpos_avg', 'PtAuPdAu_BTpos_std', 'PtAuPdAu_BTpos_max', 'PtAuPdAu_BTpos_min', 'PtAuPdAu_BTpos_num',  
                     'PtAuPdPd_BTneg_avg', 'PtAuPdPd_BTneg_std', 'PtAuPdPd_BTneg_max', 'PtAuPdPd_BTneg_min', 'PtAuPdPd_BTneg_num', 'PtAuPdPd_BTpos_avg', 'PtAuPdPd_BTpos_std', 'PtAuPdPd_BTpos_max', 'PtAuPdPd_BTpos_min', 'PtAuPdPd_BTpos_num', 
                     'PtAuPdPt_BTneg_avg', 'PtAuPdPt_BTneg_std', 'PtAuPdPt_BTneg_max', 'PtAuPdPt_BTneg_min', 'PtAuPdPt_BTneg_num', 'PtAuPdPt_BTpos_avg', 'PtAuPdPt_BTpos_std', 'PtAuPdPt_BTpos_max', 'PtAuPdPt_BTpos_min', 'PtAuPdPt_BTpos_num', 
                     'PtAuPtAu_BTneg_avg', 'PtAuPtAu_BTneg_std', 'PtAuPtAu_BTneg_max', 'PtAuPtAu_BTneg_min', 'PtAuPtAu_BTneg_num', 'PtAuPtAu_BTpos_avg', 'PtAuPtAu_BTpos_std', 'PtAuPtAu_BTpos_max', 'PtAuPtAu_BTpos_min', 'PtAuPtAu_BTpos_num',  
@@ -371,7 +374,7 @@ def mergeReformatData(outputMD, verbose=True):
     df1 = pd.DataFrame(outputMD).T
     df1.columns = ['confID', 'T', 'P', 'Potential_E', 'Kinetic_E', 'Total_E']
     if os.path.getsize(f"{featSourcePath}/{outputMD[0]}.csv") == 0: 
-        print(f"    *{outputMD[0]} is a BNP instead of TNP! Skipping...") 
+        print(f"    {outputMD[0]} is a BNP instead of TNP! Skipping...") 
         df = pd.DataFrame(columns=ALL_HEADERS_LIST)
         df.to_csv(f"{featEngPath}/{outputMD[0]}.csv", sep=',', header=True)
         return
@@ -410,7 +413,7 @@ def concatNPfeats(verbose=False):
     with open(finalDataFName, 'wb') as fout:
         for (i, featCSV) in enumerate(featCSVs):
             if os.path.getsize(f"{featEngPath}/{featCSV}") == 0: 
-                print(f"    *{featCSV} is a BNP instead of TNP! Skipping...") 
+                print(f"    {featCSV} is a BNP instead of TNP! Skipping...") 
                 continue
             with open(f"{featEngPath}/{featCSV}", 'rb') as f:
                 if i != 0: next(f)  # Skip header
@@ -418,13 +421,17 @@ def concatNPfeats(verbose=False):
 
 
 if __name__ == '__main__':
-    runTask = 'concatNPfeats' # 'mergeReformatData'  # 'mergeReformatData' or 'concatNPfeats' or 'debug'
-    
     if runTask == 'mergeReformatData':  # Parallel 
         if not isdir(featEngPath): os.mkdir(featEngPath)
-        runMergeReformatParallel(verbose=True)
+        if runParallel: runMergeReformatParallel(verbose=True)
+        else:
+            with open(MDoutFName, 'r') as f:
+                f.readline()
+                for outputMD in csv.reader(f): 
+                    if not exists(f"{featEngPath}/{outputMD[0]}.csv"):
+                        mergeReformatData(outputMD, verbose=True)
     elif runTask == 'concatNPfeats':  # Serial 
         concatNPfeats(verbose=True)
     elif runTask == 'debug':
-        outputMD = ['00000', '273.15', '22.1', '21.1', '-101.1', '-81.0']
+        outputMD = ['10448', '2247.7315', '172.04896', '-3821.53' ,'278.33933', '-3543.1907']
         mergeReformatData(outputMD, verbose=True) 
