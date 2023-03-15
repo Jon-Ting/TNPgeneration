@@ -2,9 +2,13 @@
 This repository contains code written for generation of AuPtPd trimetallic nanoparticles (TNPs) structural data set for machine learning applications.
 
 Conducted by: Kaihan Lu assisted by Haotai Peng (Bill)
+
 Supervised by: Jonathan Yik Chang Ting and Amanda Barnard
+
 Institution: School of Computing Australian National University
+
 Research course: SCNC2021 Science Research Project
+
 Date Accomplished: 1/1/23
 
 
